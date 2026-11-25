@@ -21,7 +21,7 @@ Cada NPC tem um sprite SVG próprio; esse mesmo recurso é mostrado como avatar 
 ## Zonas e progressão
 
 1. **Praia do Começo:** ler a mensagem na garrafa revela o mapa; encontrar o mapa revela cinco peças LEGO (três espalhadas pela ilha e duas escondidas em palmeiras), necessárias para montar a jangada.
-2. **Caminho das Medusas:** os irmãos percorrem um labirinto sinuoso sobre a água. O grupo de medusas bloqueia o corredor até encontrarem o escudo; os outros contactos tiram um ponto de vida a Alfredo. A saída final abre quando atravessam o grupo com o escudo.
+2. **Caminho das Medusas:** os irmãos percorrem um labirinto sinuoso sobre a água, com ramificações sem saída. O escudo está no fim de um desvio: Alfredo tem de entrar no beco e voltar pelo mesmo caminho para retomar a rota. A barreira de medusas bloqueia o corredor e causa dano ao toque até encontrarem o escudo; a saída final abre quando atravessam o grupo protegidos.
 3. **Tempestade dos Sons:** os irmãos procuram cristais escondidos em rochas e engrenagens entre algas. A Medusa Musical pede a construção de uma nota e de uma caixa musical; quando recebe a caixa, a tempestade dissipa-se numa animação e revela o caminho para a Ilhota do Farol.
 4. **Ilhota do Farol:** depois de falar com o Tiozão, os irmãos recolhem um atum, um rato, um fio e um novelo para preparar o isco e as redes que atraem os peixes-gato.
 5. **Gruta da Sardanisca Dentista:** os irmãos encontram os animais em tratamento e ajudam o Tiozão e a Sardanisca a cuidar juntos dos peixes-gato; quando fazem as pazes, corações animados celebram o acordo.
@@ -33,9 +33,9 @@ As zonas são desbloqueadas em sequência, seguindo os capítulos 1–11. O ecr�
 ## Sistemas implementados
 
 - Movimento em quatro direções, corrida, colisão e interação por proximidade.
-- A vida de Alfredo fica visível no HUD com dez corações e contador. Cada colisão com medusas causa dano, toca um efeito sonoro, mostra uma reação de impacto e empurra-o para trás; na décima colisão regressa à Praia do Começo.
-- A passagem no fim do Caminho das Medusas fica bloqueada até Alfredo atravessar o percurso ainda com vida; o power-up a meio protege-o das medusas.
-- O Caminho das Medusas tem corredores sinuosos de três tiles de largura e uma barreira de medusas que só deixa passar com o escudo.
+- A vida de Alfredo fica visível no HUD com dez corações e contador. Cada colisão com medusas causa dano, toca um efeito sonoro, mostra uma reação de impacto e empurra-o para trás; ao esgotar a vida, recebe uma mensagem a explicar a falha antes de confirmar o regresso à Praia do Começo.
+- A passagem no fim do Caminho das Medusas fica bloqueada até Alfredo atravessar o percurso ainda com vida; o escudo protege-o das medusas.
+- O Caminho das Medusas tem corredores sinuosos de três tiles de largura e becos sem saída. O escudo fica no fim de um desvio e exige regressar pelo mesmo caminho; a barreira de medusas bloqueia e causa dano ao toque até o escudo ser recolhido.
 - Cinco peças LEGO escondidas na Tempestade dos Sons: os cristais estão disfarçados em rochas e as engrenagens em algas; dois cristais constroem a nota musical e as cinco peças constroem a caixa musical.
 - A entrega da caixa à Medusa Musical anima a abertura do caminho luminoso; a passagem fica disponível e permanece aberta ao retomar a aventura.
 - Na Ilhota do Farol, falar com o Tiozão revela quatro ingredientes recolhíveis (atum, rato, fio e novelo); só depois de os reunir é possível preparar o isco e construir as redes.

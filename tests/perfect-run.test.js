@@ -176,8 +176,9 @@ test('a perfect playthrough completes every zone without losing health', () => {
   run.choose('Partir');
   run.dismissMessage();
 
-  run.walkTo(16, 11);
+  run.walkTo(11, 4);
   assert.equal(game.getState().flags.jellyfishShield, true, 'the shield should be collected in the maze');
+  run.walkTo(13, 7);
   run.walkTo(19, 18);
   assert.equal(game.getState().flags.medusaChallengeCompleted, true, 'crossing the group should complete the challenge');
   run.dismissMessage();
@@ -340,14 +341,46 @@ test('medusa collisions damage and knock Alfredo back, while the shield prevents
   assert.equal(game.isBlocked(16.5, 14.5), true, 'the blockade should stop an unshielded player');
 });
 
-test('the tenth medusa collision returns Alfredo to the starting beach', () => {
+test('the medusa blockade damages Alfredo when he tries to cross without the shield', () => {
+  const game = createGame();
+  game.startNewGame();
+  game.setState({ zone: 1, x: 16.5, y: 13.8, health: 10 });
+  assert.equal(game.isBlocked(16.5, 14.5), true, 'the jellyfish should block the route without the shield');
+
+  game.move(0, 1, 0.1);
+
+  const state = game.getState();
+  assert.equal(state.health, 9, 'touching the barrier should cause damage');
+  assert.equal(game.getDamageSoundCount(), 1, 'touching the barrier should play the damage sound');
+  assert.ok(state.y < 13.8, 'the barrier should knock Alfredo backwards');
+  assert.equal(game.getTile(Math.floor(state.x), Math.floor(state.y)) === 12, false, 'Alfredo should not be left inside the barrier');
+});
+
+test('the shield sits at the end of a dead-end detour that must be retraced', () => {
+  const game = createGame();
+  const run = createRunner(game);
+  game.startNewGame();
+  game.setState({ zone: 1, x: 7, y: 13, flags: { jellyfishShield: false } });
+
+  assert.equal(game.getTile(11, 4), 10, 'the shield should be at the dead end');
+  assert.equal(game.isBlocked(10.5, 4.5), true, 'the shield dead end should have a wall on one side');
+  assert.equal(game.isBlocked(12.5, 4.5), true, 'the shield dead end should have a wall on the other side');
+  assert.equal(game.isBlocked(11.5, 3.5), true, 'the shield dead end should have a wall beyond it');
+
+  run.walkTo(11, 4);
+  assert.equal(game.getState().flags.jellyfishShield, true);
+  run.walkTo(13, 7);
+  assert.equal(game.getState().flags.jellyfishShield, true, 'Alfredo should return to the maze junction after collecting the shield');
+});
+
+test('the tenth medusa collision explains the failure before returning Alfredo to the starting beach', () => {
   const game = createGame();
   game.startNewGame();
   game.setState({ zone: 1, x: 5.8, y: 13, health: 10 });
   let collisions = 0;
   let health = 10;
 
-  for (let attempt = 0; attempt < 30 && game.getState().zone === 1; attempt++) {
+  for (let attempt = 0; attempt < 30 && game.getState().zone === 1 && !game.getDialog(); attempt++) {
     game.move(1, 0, 0.1);
     const state = game.getState();
     if (state.zone === 0) collisions++;
@@ -355,22 +388,34 @@ test('the tenth medusa collision returns Alfredo to the starting beach', () => {
     health = state.zone === 1 ? state.health : 10;
   }
 
-  const state = game.getState();
   assert.equal(collisions, 10, 'the reset should happen on exactly the tenth collision');
   assert.equal(game.getDamageSoundCount(), 10, 'every collision, including the final one, should play the damage sound');
+  const failedState = game.getState();
+  assert.equal(failedState.zone, 1, 'Alfredo should remain in the maze until the failure message is acknowledged');
+  assert.equal(failedState.health, 0);
+  assert.match(game.getDialog().msg, /atingiram Alfredo dez vezes e esgotaram toda a sua vida/);
+  assert.deepEqual([...game.getDialog().choices], ['Regressar à Praia do Começo']);
+  game.choose('Regressar à Praia do Começo');
+
+  const state = game.getState();
   assert.equal(state.zone, 0);
   assert.equal(state.x, 7);
   assert.equal(state.y, 12);
   assert.equal(state.health, 10);
-  assert.match(game.getDialog().msg, /dez vezes/);
 });
 
-test('losing all health returns the player to the starting beach and saves the reset state', () => {
+test('losing all health explains the failure before returning to the beach and saving the reset state', () => {
   const game = createGame();
   game.startNewGame();
   game.setState({ zone: 1, x: 5.8, y: 13, health: 1, flags: { jellyfishShield: false } });
 
   game.move(1, 0, 0.1);
+
+  const failedState = game.getState();
+  assert.equal(failedState.zone, 1, 'the player should see the failure reason before being sent back');
+  assert.equal(failedState.health, 0);
+  assert.match(game.getDialog().msg, /esgotaram toda a sua vida/);
+  game.choose('Regressar à Praia do Começo');
 
   const state = game.getState();
   assert.equal(state.zone, 0);
@@ -378,7 +423,6 @@ test('losing all health returns the player to the starting beach and saves the r
   assert.equal(state.y, 12);
   assert.equal(state.health, 10);
   assert.equal(state.flags.jellyfishShield, false);
-  assert.match(game.getDialog().msg, /Voltei à Praia do Começo/);
   assert.equal(JSON.parse(game.getSavedProgress()).state.zone, 0, 'the reset state should be persisted');
 });
 
