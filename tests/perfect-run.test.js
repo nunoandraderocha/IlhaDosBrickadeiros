@@ -230,6 +230,7 @@ test('a perfect playthrough completes every zone without losing health', () => {
 
   run.interactAt('tiozao-cave');
   run.choose('Propor que cuidem deles juntos');
+  assert.ok(game.getClinicHeartAnimation() > 0, 'hearts should animate when the pair agrees to care for the cats together');
   run.dismissMessage();
   run.interactAt('clinic-exit');
   run.choose('Partir para a feira');
@@ -263,6 +264,21 @@ test('the first-zone raft requires five pieces, including two collected from pal
   const game = createGame();
   const run = createRunner(game);
   game.startNewGame();
+
+  for (const id of ['map', 'raft-piece-shore-a', 'raft-piece-shore-b', 'raft-piece-shore-c', 'raft-palm-north', 'raft-palm-south']) {
+    assert.equal(game.getActors().find(actor => actor.id === id).visible, false, `${id} should be hidden before finding the message`);
+  }
+  run.interactAt('bottle');
+  run.dismissMessage();
+  assert.equal(game.getActors().find(actor => actor.id === 'map').visible, true, 'reading the message should reveal the map');
+  for (const id of ['raft-piece-shore-a', 'raft-piece-shore-b', 'raft-piece-shore-c', 'raft-palm-north', 'raft-palm-south']) {
+    assert.equal(game.getActors().find(actor => actor.id === id).visible, false, `${id} should stay hidden until the map is collected`);
+  }
+  run.interactAt('map');
+  run.dismissMessage();
+  for (const id of ['raft-piece-shore-a', 'raft-piece-shore-b', 'raft-piece-shore-c', 'raft-palm-north', 'raft-palm-south']) {
+    assert.equal(game.getActors().find(actor => actor.id === id).visible, true, `${id} should be revealed by the map`);
+  }
 
   run.interactAt('raft');
   assert.match(game.getDialog().msg, /0\/5/);
@@ -373,20 +389,35 @@ test('the brother follows a navigable route around trees without entering blocke
   assert.ok(minimumDistance < 1.25, `the brother should follow the player around the obstacle (distance ${minimumDistance.toFixed(2)}, position ${finalState.brother.x.toFixed(2)},${finalState.brother.y.toFixed(2)})`);
 });
 
-test('the brother reminds Alfredo of the current objective only when he is close enough', () => {
+test('the brother reminds Alfredo of the current objective in story order and only when close enough', () => {
   const game = createGame();
   game.startNewGame();
-  game.setState({ zone: 0, x: 7, y: 12, brother: { x: 10, y: 12 } });
+  game.setState({ zone: 0, x: 5, y: 12, brother: { x: 8, y: 12 } });
 
   game.interact();
   assert.match(game.getDialog().msg, /Não há ninguém ou nada por perto/);
   game.next();
 
-  game.setState({ brother: { x: 7.7, y: 12 } });
+  game.setState({ brother: { x: 5.7, y: 12 } });
   game.interact();
   assert.equal(game.getDialog().who, 'Irmãozinho');
-  assert.match(game.getDialog().msg, /cinco peças para a jangada/);
+  assert.equal(game.getDialog().msg, 'Olha, ali, uma mensagem na garrafa. Vamos ver o que diz!');
   assert.equal(game.getState().face, 2, 'Alfredo should turn towards his brother');
+  game.next();
+
+  game.setState({ flags: { bottle: true } });
+  game.interact();
+  assert.equal(game.getDialog().msg, 'Vamos procurar o mapa para sabermos para onde ir.');
+  game.next();
+
+  game.setState({ flags: { map: true } });
+  game.interact();
+  assert.match(game.getDialog().msg, /cinco peças para construir a jangada/);
+  game.next();
+
+  game.setState({ items: ['raft-piece-shore-a', 'raft-piece-shore-b', 'raft-piece-shore-c', 'raft-piece-palm-north', 'raft-piece-palm-south'] });
+  game.interact();
+  assert.match(game.getDialog().msg, /Já temos as cinco peças/);
   game.next();
 
   game.setState({ zone: 1, x: 4, y: 13, brother: { x: 4.7, y: 13 } });
@@ -448,4 +479,29 @@ test('the sound storm path only opens after the Musical Medusa receives the musi
   assert.deepEqual([...game.getDialog().choices], ['Seguir o caminho']);
   run.choose('Seguir o caminho');
   assert.equal(game.getState().zone, 3);
+});
+
+test('an NPC trembles while speaking and stops when the dialogue closes', () => {
+  const game = createGame();
+  const run = createRunner(game);
+  game.startNewGame();
+  game.setState({ zone: 3, x: 13, y: 11 });
+
+  run.interactAt('tiozao');
+  assert.equal(game.getSpeakingNpc(), 'tiozao');
+  run.dismissMessage();
+  assert.equal(game.getSpeakingNpc(), '');
+});
+
+test('hearts animate when Tiozao and Sardanisca agree to care for the cats together', () => {
+  const game = createGame();
+  const run = createRunner(game);
+  game.startNewGame();
+  game.setState({ zone: 4, x: 13, y: 13 });
+
+  run.interactAt('tiozao-cave');
+  run.choose('Propor que cuidem deles juntos');
+  assert.equal(game.getState().flags.clinicResolved, true);
+  assert.ok(game.getClinicHeartAnimation() > 0);
+  assert.match(game.getDialog().msg, /cuidar deles juntos/);
 });
