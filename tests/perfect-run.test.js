@@ -236,13 +236,22 @@ test('a perfect playthrough completes every zone without losing health', () => {
   run.choose('Partir para a feira');
   run.dismissMessage();
 
+  for (const id of ['box-left', 'box-right']) {
+    assert.equal(game.getActors().find(actor => actor.id === id).visible, false, `${id} should stay hidden until Alfredo speaks with a guard`);
+  }
+  assert.equal(game.isBlocked(17.5, 12.5), true, 'the guards should block the full passage before Alfredo has the key');
   run.interactAt('guard-white');
   run.choose('Entendi o enigma');
   run.dismissMessage();
+  for (const id of ['box-left', 'box-right']) {
+    assert.equal(game.getActors().find(actor => actor.id === id).visible, true, `${id} should appear after speaking with a guard`);
+  }
   const ticketBox = game.getState().flags.museumTicketBox;
   assert.ok(['box-left', 'box-right'].includes(ticketBox), 'the ticket box should be randomized');
   run.interactAt(ticketBox);
   run.dismissMessage();
+  assert.equal(game.getState().flags.museumKey, true, 'the correct box should grant the key');
+  assert.equal(game.isBlocked(17.5, 12.5), false, 'the key should open the full passage');
   run.interactAt('museum-door');
   run.choose('Entrar no museu');
   run.dismissMessage();
@@ -304,10 +313,14 @@ test('medusa collisions damage and knock Alfredo back, while the shield prevents
   const game = createGame();
   game.startNewGame();
   game.setState({ zone: 1, x: 5.8, y: 13, health: 10 });
+  assert.ok(game.getHealthDisplay().startsWith('❤️'.repeat(10)), 'the HUD should show all ten hearts');
+  assert.match(game.getHealthDisplay(), /10\/10/, 'the HUD should show the health count');
 
   game.move(1, 0, 0.1);
   let state = game.getState();
   assert.equal(state.health, 9, 'colliding with a medusa should cause one damage');
+  assert.equal(game.getDamageSoundCount(), 1, 'a collision should play the damage sound');
+  assert.match(game.getHealthDisplay(), /9\/10/, 'the HUD should update immediately after damage');
   assert.ok(state.x < 5.8, 'the collision should knock Alfredo backwards');
   assert.equal(game.getTile(Math.floor(state.x), Math.floor(state.y)) === 3, false, 'Alfredo should not be left inside a medusa tile');
 
@@ -316,6 +329,7 @@ test('medusa collisions damage and knock Alfredo back, while the shield prevents
   game.move(1, 0, 0.1);
   state = game.getState();
   assert.equal(state.health, 8, 'a second collision should cause another damage');
+  assert.equal(game.getDamageSoundCount(), 2, 'each collision should play its own damage sound');
   assert.ok(state.x < 5.8, 'the second collision should also knock Alfredo backwards');
 
   game.setState({ x: 5.8, y: 13, health: 10, flags: { jellyfishShield: true } });
@@ -343,6 +357,7 @@ test('the tenth medusa collision returns Alfredo to the starting beach', () => {
 
   const state = game.getState();
   assert.equal(collisions, 10, 'the reset should happen on exactly the tenth collision');
+  assert.equal(game.getDamageSoundCount(), 10, 'every collision, including the final one, should play the damage sound');
   assert.equal(state.zone, 0);
   assert.equal(state.x, 7);
   assert.equal(state.y, 12);
@@ -385,6 +400,30 @@ test('random ticket box differs across new adventures and survives saving and re
   rightGame.startNewGame();
   assert.equal(rightGame.getState().flags.museumTicketBox, 'box-right');
   assert.notEqual(rightGame.getState().flags.museumTicketBox, leftBox, 'a new adventure should be able to choose the other box');
+});
+
+test('choosing the wrong fair box returns Alfredo to the previous zone and keeps the puzzle retryable', () => {
+  const game = createGame();
+  const run = createRunner(game);
+  game.startNewGame();
+  game.setState({ zone: 5, x: 4, y: 13, unlocked: [0, 1, 2, 3, 4, 5] });
+
+  assert.equal(game.isBlocked(17.5, 12.5), true, 'the barrier should prevent bypassing the gate');
+  run.interactAt('guard-white');
+  run.choose('Entendi o enigma');
+  run.dismissMessage();
+
+  const correctBox = game.getState().flags.museumTicketBox;
+  const wrongBox = correctBox === 'box-left' ? 'box-right' : 'box-left';
+  run.interactAt(wrongBox);
+  assert.match(game.getDialog().msg, /levam-nos de volta à gruta/);
+  run.choose('Voltar à gruta');
+
+  const state = game.getState();
+  assert.equal(state.zone, 4);
+  assert.equal(state.flags.guardsMet, true, 'speaking with a guard should persist after returning');
+  assert.equal(state.flags.guardsSolved, true, 'the riddle should remain solved for a retry');
+  assert.equal(state.flags.museumKey, false, 'the wrong box should not grant the key');
 });
 
 test('music can be toggled on and starts only one copy of the active track', () => {
