@@ -42,7 +42,30 @@ function createGame({ storage = new Map(), random = 0.5 } = {}) {
     querySelector: selector => selector === '.hud' ? getElementById('hud') : new Element(),
     querySelectorAll: () => []
   };
-  const window = { addEventListener() {} };
+  class AudioParam {
+    setValueAtTime() {}
+    linearRampToValueAtTime() {}
+    exponentialRampToValueAtTime() {}
+  }
+  class AudioNode {
+    constructor() {
+      this.frequency = new AudioParam();
+      this.detune = new AudioParam();
+      this.gain = new AudioParam();
+    }
+    connect() {}
+    disconnect() {}
+    start() {}
+    stop() {}
+  }
+  class AudioContext {
+    constructor() { this.currentTime = 0; this.destination = new AudioNode(); this.state = 'running'; }
+    createOscillator() { return new AudioNode(); }
+    createGain() { return new AudioNode(); }
+    createBiquadFilter() { return new AudioNode(); }
+    resume() { return Promise.resolve(); }
+  }
+  const window = { AudioContext, addEventListener() {} };
   const localStorage = {
     getItem: key => storage.get(key) ?? null,
     setItem: (key, value) => storage.set(key, value),
@@ -134,9 +157,11 @@ function createRunner(game) {
   function interactAt(id) {
     const actor = game.getActors().find(entry => entry.id === id && entry.visible && entry.available);
     assert.ok(actor, `actor ${id} should be visible`);
-    const target = game.isBlocked(actor.x + 0.5, actor.y + 0.5)
-      ? [[actor.x - 1, actor.y], [actor.x + 1, actor.y], [actor.x, actor.y - 1], [actor.x, actor.y + 1]]
-        .find(([x, y]) => !game.isBlocked(x + 0.5, y + 0.5))
+    const state = game.getState();
+    const adjacent = [[actor.x - 1, actor.y], [actor.x + 1, actor.y], [actor.x, actor.y - 1], [actor.x, actor.y + 1]]
+      .sort((a, b) => Math.hypot(a[0] - state.x, a[1] - state.y) - Math.hypot(b[0] - state.x, b[1] - state.y));
+    const target = game.isBlocked(actor.x, actor.y)
+      ? adjacent.find(([x, y]) => !game.isBlocked(x, y))
       : [actor.x, actor.y];
     assert.ok(target, `no accessible tile next to ${id}`);
     walkTo(target[0], target[1]);
@@ -240,10 +265,15 @@ test('a perfect playthrough completes every zone without losing health', () => {
   for (const id of ['box-left', 'box-right']) {
     assert.equal(game.getActors().find(actor => actor.id === id).visible, false, `${id} should stay hidden until Alfredo speaks with a guard`);
   }
-  assert.equal(game.isBlocked(17.5, 12.5), true, 'the guards should block the full passage before Alfredo has the key');
+  assert.equal(game.isBlocked(11.1, 13), true, 'the guards should physically block the narrow corridor');
+  assert.equal(game.isBlocked(10.5, 12.5), true, 'the corridor should have a wall along its upper edge');
+  assert.equal(game.isBlocked(10.5, 14.5), true, 'the corridor should have a wall along its lower edge');
+  assert.equal(game.isBlocked(17.5, 13.5), true, 'the museum gate should remain locked without the key');
   run.interactAt('guard-white');
   run.choose('Entendi o enigma');
   run.dismissMessage();
+  assert.equal(game.getActors().find(actor => actor.id === 'guard-white').y, 12, 'the guards should move out of the corridor after the riddle is solved');
+  assert.equal(game.isBlocked(11.1, 13), false, 'the corridor should open after the guards move aside');
   for (const id of ['box-left', 'box-right']) {
     assert.equal(game.getActors().find(actor => actor.id === id).visible, true, `${id} should appear after speaking with a guard`);
   }
@@ -252,7 +282,7 @@ test('a perfect playthrough completes every zone without losing health', () => {
   run.interactAt(ticketBox);
   run.dismissMessage();
   assert.equal(game.getState().flags.museumKey, true, 'the correct box should grant the key');
-  assert.equal(game.isBlocked(17.5, 12.5), false, 'the key should open the full passage');
+  assert.equal(game.isBlocked(17.5, 13.5), false, 'the key should unlock the museum passage');
   run.interactAt('museum-door');
   run.choose('Entrar no museu');
   run.dismissMessage();
@@ -468,6 +498,46 @@ test('choosing the wrong fair box returns Alfredo to the previous zone and keeps
   assert.equal(state.flags.guardsMet, true, 'speaking with a guard should persist after returning');
   assert.equal(state.flags.guardsSolved, true, 'the riddle should remain solved for a retry');
   assert.equal(state.flags.museumKey, false, 'the wrong box should not grant the key');
+});
+
+test('the museum soundtrack is an ominous generated ambience and stops when disabled', () => {
+  const game = createGame();
+  game.startNewGame();
+  game.setState({ zone: 6 });
+  assert.equal(game.getMusicState().track, 6);
+  assert.equal(game.getMusicState().museumMusicActive, false);
+
+  game.toggleMusic();
+  assert.equal(game.getMusicState().enabled, true);
+  assert.equal(game.getMusicState().museumMusicActive, true, 'the museum should start its low ambient drone');
+  assert.equal(game.getMusicState().playCount, 0, 'the museum should use the generated ambience, not the regular music player');
+
+  game.toggleMusic();
+  assert.equal(game.getMusicState().museumMusicActive, false, 'disabling music should stop the museum ambience');
+});
+
+test('the archaeologist guards the ark, damages Alfredo when approached, and explains defeat before reset', () => {
+  const game = createGame();
+  game.startNewGame();
+  game.setState({ zone: 6, x: 23, y: 13, health: 10 });
+  assert.equal(game.getActors().find(actor => actor.id === 'archaeologist').x, 24);
+  assert.equal(game.getActors().find(actor => actor.id === 'magic-ark').x, 27);
+
+  game.move(1, 0, 0.1);
+  let state = game.getState();
+  assert.equal(state.health, 9, 'the archaeologist should damage Alfredo when he tries to pass');
+  assert.equal(game.getDamageSoundCount(), 1);
+  assert.ok(state.x < 23, 'the archaeologist should push Alfredo back');
+
+  game.setState({ x: 23, y: 13, health: 1 });
+  game.move(1, 0, 0.1);
+  state = game.getState();
+  assert.equal(state.zone, 6, 'Alfredo should see the failure message before returning');
+  assert.equal(state.health, 0);
+  assert.match(game.getDialog().msg, /Arqueólogo Malfeitor atingiu Alfredo/);
+  game.choose('Regressar à Praia do Começo');
+  assert.equal(game.getState().zone, 0);
+  assert.equal(game.getState().health, 10);
 });
 
 test('music can be toggled on and starts only one copy of the active track', () => {

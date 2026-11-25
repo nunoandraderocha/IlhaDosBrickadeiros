@@ -26,7 +26,7 @@ Cada NPC tem um sprite SVG próprio; esse mesmo recurso é mostrado como avatar 
 4. **Ilhota do Farol:** depois de falar com o Tiozão, os irmãos recolhem um atum, um rato, um fio e um novelo para preparar o isco e as redes que atraem os peixes-gato.
 5. **Gruta da Sardanisca Dentista:** os irmãos encontram os animais em tratamento e ajudam o Tiozão e a Sardanisca a cuidar juntos dos peixes-gato; quando fazem as pazes, corações animados celebram o acordo.
 6. **Cidade e Feira de LEGO:** os guardas bloqueiam a passagem até Alfredo encontrar a chave. Ao falar com um deles, aparecem duas caixas; a posição do bilhete e da chave é sorteada no início de cada aventura. A caixa correta abre a passagem para o museu; escolher a errada devolve Alfredo à gruta, mantendo o enigma resolvido para uma nova tentativa.
-7. **Interior do Museu LEGO:** Alfredo encontra a arca dos Blocos Mágicos e convence o Arqueólogo a partilhá-los. A aventura termina com música e um ecrã de vitória; é possível começar uma nova aventura.
+7. **Interior do Museu LEGO:** o Arqueólogo Malfeitor guarda a arca dos Blocos Mágicos e empurra Alfredo, causando dano, se ele tentar passar. Alfredo pode falar com o Arqueólogo e convencê-lo a partilhar os blocos. A zona tem uma música ambiente assustadora; a aventura termina com música de vitória e um ecrã final, onde é possível começar uma nova aventura.
 
 As zonas são desbloqueadas em sequência, seguindo os capítulos 1–11. O ecrã inicial apresenta o prefácio e permite continuar um progresso guardado ou começar uma aventura nova.
 
@@ -43,6 +43,8 @@ As zonas são desbloqueadas em sequência, seguindo os capítulos 1–11. O ecr�
 - Tiozão e Sardanisca aproximam-se um do outro na gruta.
 - Corações animados celebram o momento em que o Tiozão e a Sardanisca concordam em cuidar dos peixes-gato juntos.
 - Na Feira de LEGO, uma barreira física bloqueia a passagem até Alfredo obter a chave na caixa correta; as caixas só aparecem depois de falar com um guarda. A caixa errada leva Alfredo de volta à gruta sem perder a solução do enigma.
+- A passagem da feira é um corredor estreito bloqueado pelos guardas. Ao resolver o enigma, eles afastam-se para as laterais; a porta do museu só se abre com a chave da caixa correta.
+- No museu, o Arqueólogo guarda a arca e causa dano com recuo quando Alfredo tenta passar por ele. A música da zona é uma ambiência grave e assustadora gerada pelo navegador, e pára ao desligar a música ou sair da zona.
 - Mapas em grelha, passagens entre zonas, objetos e objetivos narrativos. Na praia, cinco peças LEGO (três à vista e duas escondidas nas palmeiras) são necessárias para construir a jangada.
 - Na Praia do Começo, a mensagem revela o mapa e só o mapa revela as peças e os caches da jangada.
 - Diálogos com escolhas e retratos de NPC; o NPC que está a falar treme suavemente enquanto o diálogo permanece aberto.
