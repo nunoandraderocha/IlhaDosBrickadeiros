@@ -20,6 +20,10 @@ As sete zonas usam faixas CC0 do OpenGameArt. A música só começa após o joga
 
 Os NPCs têm sprites SVG em `sprites/characters/`; o mesmo ficheiro é usado como sprite no mapa e como avatar na caixa de diálogo. Incluem a Medusa Musical, o Tiozão, a Sardanisca Dentista, os dois peixes-gato, os guardas, o Arqueólogo Malfeitor e os três animais em tratamento na gruta.
 
+Alfredo e o irmãozinho são desenhados no canvas, com animação, volume e equipamento distintos. Na Praia do Começo, as peças para construir a jangada também usam sprites LEGO desenhados no canvas; três estão à vista e duas são recolhidas ao procurar nas palmeiras.
+
+O terreno usa textura procedural determinística desenhada no canvas para relva, areia, caminhos e água. Assim, os detalhes ficam consistentes entre ecrãs e não requerem imagens externas de tiles.
+
 ## Ilustração do ecrã de entrada
 
 `images/alfredo-title-screen.png` é a ilustração fornecida para o título e prefácio do jogo.

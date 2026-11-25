@@ -20,7 +20,7 @@ class Element {
   setAttribute() {}
 }
 
-function createGame() {
+function createGame({ storage = new Map(), random = 0.5 } = {}) {
   const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   const source = [...html.matchAll(/<script>([\s\S]*?)<\/script>/gi)][0]?.[1];
   assert.ok(source, 'game script should exist');
@@ -43,10 +43,17 @@ function createGame() {
     querySelectorAll: () => []
   };
   const window = { addEventListener() {} };
-  const localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
+  const localStorage = {
+    getItem: key => storage.get(key) ?? null,
+    setItem: (key, value) => storage.set(key, value),
+    removeItem: key => storage.delete(key)
+  };
+  const math = Object.create(Math);
+  math.random = () => random;
   class Audio {
+    constructor() { this.playCount = 0; }
     pause() {}
-    play() { return Promise.resolve(); }
+    play() { this.playCount++; return Promise.resolve(); }
     addEventListener() {}
   }
 
@@ -58,6 +65,7 @@ function createGame() {
     document,
     localStorage,
     location: { protocol: 'http:', search: '?test=1', reload() {} },
+    Math: math,
     performance: { now: () => 0 },
     requestAnimationFrame() {},
     setInterval: () => 1,
@@ -124,7 +132,7 @@ function createRunner(game) {
   }
 
   function interactAt(id) {
-    const actor = game.getActors().find(entry => entry.id === id && entry.visible);
+    const actor = game.getActors().find(entry => entry.id === id && entry.visible && entry.available);
     assert.ok(actor, `actor ${id} should be visible`);
     const target = game.isBlocked(actor.x + 0.5, actor.y + 0.5)
       ? [[actor.x - 1, actor.y], [actor.x + 1, actor.y], [actor.x, actor.y - 1], [actor.x, actor.y + 1]]
@@ -151,6 +159,18 @@ test('a perfect playthrough completes every zone without losing health', () => {
   run.interactAt('bottle');
   run.dismissMessage();
   run.interactAt('map');
+  run.dismissMessage();
+  run.interactAt('raft');
+  assert.match(game.getDialog().msg, /jangada está incompleta/);
+  run.dismissMessage();
+  for (const id of ['raft-piece-shore-a', 'raft-piece-shore-b', 'raft-piece-shore-c', 'raft-palm-north', 'raft-palm-south']) {
+    run.interactAt(id);
+    run.dismissMessage();
+  }
+  assert.equal(game.getState().items.filter(id => id.startsWith('raft-piece-')).length, 5);
+  run.interactAt('raft');
+  run.choose('Construir a jangada');
+  assert.equal(game.getState().flags.raftBuilt, true);
   run.dismissMessage();
   run.interactAt('raft');
   run.choose('Partir');
@@ -192,6 +212,11 @@ test('a perfect playthrough completes every zone without losing health', () => {
 
   run.interactAt('tiozao');
   run.dismissMessage();
+  for (const id of ['bait-tuna', 'bait-mouse', 'bait-thread', 'bait-yarn']) {
+    run.interactAt(id);
+    run.dismissMessage();
+  }
+  assert.equal(game.getState().items.filter(id => id.startsWith('bait-')).length, 4);
   run.interactAt('tiozao');
   run.choose('Construir redes e isco');
   run.dismissMessage();
@@ -232,4 +257,195 @@ test('a perfect playthrough completes every zone without losing health', () => {
   assert.equal(finalState.victory, true);
   assert.equal(game.isVictoryVisible(), true);
   assert.deepEqual([...finalState.unlocked], [0, 1, 2, 3, 4, 5, 6]);
+});
+
+test('the first-zone raft requires five pieces, including two collected from palm caches', () => {
+  const game = createGame();
+  const run = createRunner(game);
+  game.startNewGame();
+
+  run.interactAt('raft');
+  assert.match(game.getDialog().msg, /0\/5/);
+  run.dismissMessage();
+
+  for (const id of ['raft-piece-shore-a', 'raft-piece-shore-b', 'raft-piece-shore-c', 'raft-palm-north', 'raft-palm-south']) {
+    run.interactAt(id);
+    run.dismissMessage();
+  }
+
+  assert.equal(game.getState().items.filter(id => id.startsWith('raft-piece-')).length, 5);
+  for (const id of ['raft-palm-north', 'raft-palm-south']) {
+    assert.equal(game.getActors().find(actor => actor.id === id).available, false, `${id} should be empty after searching it`);
+  }
+
+  run.interactAt('raft');
+  assert.deepEqual([...game.getDialog().choices], ['Construir a jangada', 'Construir mais tarde']);
+  run.choose('Construir a jangada');
+  assert.equal(game.getState().flags.raftBuilt, true);
+});
+
+test('medusas cause one damage per re-entry, while the shield prevents damage and opens the blockade', () => {
+  const game = createGame();
+  game.startNewGame();
+  game.setState({ zone: 1, x: 5.8, y: 13, health: 10 });
+
+  game.move(1, 0, 0.1);
+  assert.equal(game.getState().health, 9, 'entering a medusa tile should cause one damage');
+  game.move(1, 0, 0.1);
+  assert.equal(game.getState().health, 9, 'remaining on the same medusa tile should not repeatedly cause damage');
+  game.move(1, 0, 0.1);
+  game.move(-1, 0, 0.1);
+  assert.equal(game.getState().health, 8, 're-entering the same medusa tile after leaving should cause damage again');
+
+  game.setState({ x: 5.8, y: 13, health: 10, flags: { jellyfishShield: true } });
+  assert.equal(game.isBlocked(16.5, 14.5), false, 'the shield should open the medusa group blockade');
+  game.move(1, 0, 0.1);
+  assert.equal(game.getState().health, 10, 'the shield should prevent medusa damage');
+  game.setState({ flags: { jellyfishShield: false } });
+  assert.equal(game.isBlocked(16.5, 14.5), true, 'the blockade should stop an unshielded player');
+});
+
+test('losing all health returns the player to the starting beach and saves the reset state', () => {
+  const game = createGame();
+  game.startNewGame();
+  game.setState({ zone: 1, x: 5.8, y: 13, health: 1, flags: { jellyfishShield: false } });
+
+  game.move(1, 0, 0.1);
+
+  const state = game.getState();
+  assert.equal(state.zone, 0);
+  assert.equal(state.x, 7);
+  assert.equal(state.y, 12);
+  assert.equal(state.health, 10);
+  assert.equal(state.flags.jellyfishShield, false);
+  assert.match(game.getDialog().msg, /Voltei à Praia do Começo/);
+  assert.equal(JSON.parse(game.getSavedProgress()).state.zone, 0, 'the reset state should be persisted');
+});
+
+test('random ticket box differs across new adventures and survives saving and resuming', () => {
+  const leftStorage = new Map();
+  const leftGame = createGame({ storage: leftStorage, random: 0.1 });
+  leftGame.startNewGame();
+  const leftBox = leftGame.getState().flags.museumTicketBox;
+  assert.equal(leftBox, 'box-left');
+
+  leftGame.setState({ zone: 5, flags: { guardsSolved: true } });
+  leftGame.saveProgress();
+  leftGame.continueGame();
+  assert.equal(leftGame.isStartScreenVisible(), false);
+  assert.equal(leftGame.getState().zone, 5);
+  assert.equal(leftGame.getState().flags.museumTicketBox, leftBox, `resuming should preserve the original random choice (stored ${JSON.parse(leftGame.getSavedProgress()).state.flags.museumTicketBox})`);
+
+  const rightGame = createGame({ random: 0.9 });
+  rightGame.startNewGame();
+  assert.equal(rightGame.getState().flags.museumTicketBox, 'box-right');
+  assert.notEqual(rightGame.getState().flags.museumTicketBox, leftBox, 'a new adventure should be able to choose the other box');
+});
+
+test('music can be toggled on and starts only one copy of the active track', () => {
+  const game = createGame();
+  game.startNewGame();
+
+  game.toggleMusic();
+  assert.equal(game.getMusicState().enabled, true);
+  assert.equal(game.getMusicState().playCount, 1, 'enabling music should only start one playback');
+
+  game.toggleMusic();
+  assert.equal(game.getMusicState().enabled, false);
+  assert.equal(game.getMusicState().playCount, 1, 'disabling music should not restart playback');
+});
+
+test('the brother follows a navigable route around trees without entering blocked tiles', () => {
+  const game = createGame();
+  game.startNewGame();
+  game.setState({ zone: 0, x: 13.5, y: 10.5, brother: { x: 8.5, y: 9.5 } });
+  assert.equal(game.isBlocked(10.5, 10.5), true, 'the tree should be a blocked tile');
+
+  const initialDistance = Math.hypot(game.getState().x - game.getState().brother.x, game.getState().y - game.getState().brother.y);
+  let minimumDistance = initialDistance;
+  for (let frame = 0; frame < 1200; frame++) {
+    game.stepBrother(0.04);
+    const state = game.getState();
+    assert.equal(game.isBlocked(state.brother.x, state.brother.y), false, 'the brother must never step into a blocked tile');
+    minimumDistance = Math.min(minimumDistance, Math.hypot(state.x - state.brother.x, state.y - state.brother.y));
+  }
+  const finalState = game.getState();
+  assert.ok(minimumDistance < 1.25, `the brother should follow the player around the obstacle (distance ${minimumDistance.toFixed(2)}, position ${finalState.brother.x.toFixed(2)},${finalState.brother.y.toFixed(2)})`);
+});
+
+test('the brother reminds Alfredo of the current objective only when he is close enough', () => {
+  const game = createGame();
+  game.startNewGame();
+  game.setState({ zone: 0, x: 7, y: 12, brother: { x: 10, y: 12 } });
+
+  game.interact();
+  assert.match(game.getDialog().msg, /Não há ninguém ou nada por perto/);
+  game.next();
+
+  game.setState({ brother: { x: 7.7, y: 12 } });
+  game.interact();
+  assert.equal(game.getDialog().who, 'Irmãozinho');
+  assert.match(game.getDialog().msg, /cinco peças para a jangada/);
+  assert.equal(game.getState().face, 2, 'Alfredo should turn towards his brother');
+  game.next();
+
+  game.setState({ zone: 1, x: 4, y: 13, brother: { x: 4.7, y: 13 } });
+  game.interact();
+  assert.equal(game.getDialog().who, 'Irmãozinho');
+  assert.match(game.getDialog().msg, /escudo e atravessa o labirinto das medusas/);
+});
+
+test('the fishing bait requires the tuna, mouse, thread, and yarn after meeting Tiozao', () => {
+  const game = createGame();
+  const run = createRunner(game);
+  game.startNewGame();
+  game.setState({ zone: 3, x: 4, y: 13 });
+
+  for (const id of ['bait-tuna', 'bait-mouse', 'bait-thread', 'bait-yarn']) {
+    assert.equal(game.getActors().find(actor => actor.id === id).visible, false, 'bait ingredients should appear after meeting Tiozao');
+  }
+  run.interactAt('tiozao');
+  run.dismissMessage();
+
+  for (const id of ['bait-tuna', 'bait-mouse', 'bait-thread', 'bait-yarn']) {
+    assert.equal(game.getActors().find(actor => actor.id === id).visible, true);
+  }
+  run.interactAt('tiozao');
+  assert.match(game.getDialog().msg, /atum, um rato, um fio e um novelo/);
+  assert.deepEqual([...game.getDialog().choices], []);
+  run.dismissMessage();
+
+  for (const id of ['bait-tuna', 'bait-mouse', 'bait-thread']) {
+    run.interactAt(id);
+    run.dismissMessage();
+  }
+  run.interactAt('tiozao');
+  assert.match(game.getDialog().msg, /3\/4/);
+  assert.deepEqual([...game.getDialog().choices], []);
+  run.dismissMessage();
+
+  run.interactAt('bait-yarn');
+  run.dismissMessage();
+  run.interactAt('tiozao');
+  assert.deepEqual([...game.getDialog().choices], ['Construir redes e isco', 'Ainda não']);
+  run.choose('Construir redes e isco');
+  assert.equal(game.getState().flags.lureBuilt, true);
+  assert.equal(game.getActors().find(actor => actor.id === 'fish-white').visible, true);
+});
+
+test('the sound storm path only opens after the Musical Medusa receives the music box', () => {
+  const game = createGame();
+  const run = createRunner(game);
+  game.startNewGame();
+  game.setState({ zone: 2, x: 30, y: 13 });
+
+  run.interactAt('sound-storm');
+  assert.match(game.getDialog().msg, /tempestade musical ainda bloqueia/);
+  run.dismissMessage();
+
+  game.setState({ flags: { musicDelivered: true } });
+  run.interactAt('sound-storm');
+  assert.deepEqual([...game.getDialog().choices], ['Seguir o caminho']);
+  run.choose('Seguir o caminho');
+  assert.equal(game.getState().zone, 3);
 });
