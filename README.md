@@ -16,10 +16,6 @@ python -m http.server 8000
 
 Depois abre http://localhost:8000 num navegador moderno. Os navegadores bloqueiam o carregamento das faixas locais quando o jogo é aberto diretamente por `file://`; sem servidor, o jogo funciona sem música.
 
-## Testes
-
-Com Node.js 18 ou superior, executa `npm test` para simular uma aventura completa sem perder vida. O teste percorre as sete zonas, recolhe os objetos, resolve os desafios e confirma o ecrã de vitória.
-
 ## Publicar com GitHub Pages
 
 1. Criar um repositório público chamado `ilha-dos-brincadeiros`.
