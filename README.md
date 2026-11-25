@@ -4,7 +4,7 @@ RPG 2D de aventura, exploração e enigmas inspirado nas histórias de Natal do 
 
 ## Estado atual
 
-O `index.html` contém o protótipo jogável v4, com ecrã inicial narrativo, seis zonas ligadas aos capítulos, NPCs com sprites e avatares de diálogo, e progresso guardado localmente.
+O `index.html` contém o protótipo jogável v4, com ecrã inicial narrativo, sete zonas ligadas aos capítulos, NPCs com sprites e avatares de diálogo, recolha de peças LEGO, enigma da feira, ecrã de vitória e progresso guardado localmente.
 
 ## Executar localmente
 
