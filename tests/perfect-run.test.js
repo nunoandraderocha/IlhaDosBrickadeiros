@@ -20,7 +20,7 @@ class Element {
   setAttribute() {}
 }
 
-function createGame({ storage = new Map(), random = 0.5 } = {}) {
+function createGame({ storage = new Map(), random = 0.5, protocol = 'http:' } = {}) {
   const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   const source = [...html.matchAll(/<script>([\s\S]*?)<\/script>/gi)][0]?.[1];
   assert.ok(source, 'game script should exist');
@@ -87,7 +87,7 @@ function createGame({ storage = new Map(), random = 0.5 } = {}) {
     confirm: () => true,
     document,
     localStorage,
-    location: { protocol: 'http:', search: '?test=1', reload() {} },
+    location: { protocol, search: '?test=1', reload() {} },
     Math: math,
     performance: { now: () => 0 },
     requestAnimationFrame() {},
@@ -501,7 +501,7 @@ test('choosing the wrong fair box returns Alfredo to the previous zone and keeps
 });
 
 test('the museum soundtrack is an ominous generated ambience and stops when disabled', () => {
-  const game = createGame();
+  const game = createGame({ protocol: 'file:' });
   game.startNewGame();
   game.setState({ zone: 6 });
   assert.equal(game.getMusicState().track, 6);
@@ -514,6 +514,9 @@ test('the museum soundtrack is an ominous generated ambience and stops when disa
 
   game.toggleMusic();
   assert.equal(game.getMusicState().museumMusicActive, false, 'disabling music should stop the museum ambience');
+
+  game.setState({ zone: 5 });
+  assert.equal(game.getMusicState().enabled, false, 'the file-based ambience should not leave music enabled in zones that need a server');
 });
 
 test('the archaeologist guards the ark, damages Alfredo when approached, and explains defeat before reset', () => {
