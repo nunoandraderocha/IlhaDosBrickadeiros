@@ -300,18 +300,23 @@ test('the first-zone raft requires five pieces, including two collected from pal
   assert.equal(game.getState().flags.raftBuilt, true);
 });
 
-test('medusas cause one damage per re-entry, while the shield prevents damage and opens the blockade', () => {
+test('medusa collisions damage and knock Alfredo back, while the shield prevents collisions', () => {
   const game = createGame();
   game.startNewGame();
   game.setState({ zone: 1, x: 5.8, y: 13, health: 10 });
 
   game.move(1, 0, 0.1);
-  assert.equal(game.getState().health, 9, 'entering a medusa tile should cause one damage');
+  let state = game.getState();
+  assert.equal(state.health, 9, 'colliding with a medusa should cause one damage');
+  assert.ok(state.x < 5.8, 'the collision should knock Alfredo backwards');
+  assert.equal(game.getTile(Math.floor(state.x), Math.floor(state.y)) === 3, false, 'Alfredo should not be left inside a medusa tile');
+
   game.move(1, 0, 0.1);
-  assert.equal(game.getState().health, 9, 'remaining on the same medusa tile should not repeatedly cause damage');
+  assert.equal(game.getState().health, 9, 'approaching without contacting the medusa should not cause extra damage');
   game.move(1, 0, 0.1);
-  game.move(-1, 0, 0.1);
-  assert.equal(game.getState().health, 8, 're-entering the same medusa tile after leaving should cause damage again');
+  state = game.getState();
+  assert.equal(state.health, 8, 'a second collision should cause another damage');
+  assert.ok(state.x < 5.8, 'the second collision should also knock Alfredo backwards');
 
   game.setState({ x: 5.8, y: 13, health: 10, flags: { jellyfishShield: true } });
   assert.equal(game.isBlocked(16.5, 14.5), false, 'the shield should open the medusa group blockade');
@@ -319,6 +324,30 @@ test('medusas cause one damage per re-entry, while the shield prevents damage an
   assert.equal(game.getState().health, 10, 'the shield should prevent medusa damage');
   game.setState({ flags: { jellyfishShield: false } });
   assert.equal(game.isBlocked(16.5, 14.5), true, 'the blockade should stop an unshielded player');
+});
+
+test('the tenth medusa collision returns Alfredo to the starting beach', () => {
+  const game = createGame();
+  game.startNewGame();
+  game.setState({ zone: 1, x: 5.8, y: 13, health: 10 });
+  let collisions = 0;
+  let health = 10;
+
+  for (let attempt = 0; attempt < 30 && game.getState().zone === 1; attempt++) {
+    game.move(1, 0, 0.1);
+    const state = game.getState();
+    if (state.zone === 0) collisions++;
+    else if (state.health < health) collisions += health - state.health;
+    health = state.zone === 1 ? state.health : 10;
+  }
+
+  const state = game.getState();
+  assert.equal(collisions, 10, 'the reset should happen on exactly the tenth collision');
+  assert.equal(state.zone, 0);
+  assert.equal(state.x, 7);
+  assert.equal(state.y, 12);
+  assert.equal(state.health, 10);
+  assert.match(game.getDialog().msg, /dez vezes/);
 });
 
 test('losing all health returns the player to the starting beach and saves the reset state', () => {
@@ -413,6 +442,7 @@ test('the brother reminds Alfredo of the current objective in story order and on
   game.setState({ flags: { map: true } });
   game.interact();
   assert.match(game.getDialog().msg, /cinco peças para construir a jangada/);
+  assert.match(game.getDialog().msg, /pedras e às árvores da ilha/);
   game.next();
 
   game.setState({ items: ['raft-piece-shore-a', 'raft-piece-shore-b', 'raft-piece-shore-c', 'raft-piece-palm-north', 'raft-piece-palm-south'] });
@@ -424,6 +454,11 @@ test('the brother reminds Alfredo of the current objective in story order and on
   game.interact();
   assert.equal(game.getDialog().who, 'Irmãozinho');
   assert.match(game.getDialog().msg, /escudo e atravessa o labirinto das medusas/);
+  game.next();
+
+  game.setState({ zone: 2, x: 4, y: 13, brother: { x: 4.7, y: 13 } });
+  game.interact();
+  assert.match(game.getDialog().msg, /cristais nas rochas e engrenagens nas algas/);
 });
 
 test('the fishing bait requires the tuna, mouse, thread, and yarn after meeting Tiozao', () => {
