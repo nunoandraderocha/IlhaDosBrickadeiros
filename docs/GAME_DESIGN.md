@@ -1,55 +1,50 @@
 # Documento de design — A Ilha dos Brincadeiros
 
 ## Visão
-RPG 2D top-down para browser, inspirado na exploração dos primeiros Pokémon e nas histórias de Natal escritas com o Carlos.
+
+RPG 2D top-down para browser, inspirado na exploração de jogos de aventura e nas histórias de Natal escritas com o Carlos. A aventura segue os capítulos de `historia_completa.txt`, preservando os acontecimentos centrais.
 
 ## Personagens
-- **Pinguim Alfredo:** protagonista controlado pelo jogador; camisola azul e chapéu de explorador.
-- **Irmãozinho:** companheiro permanente que segue Alfredo.
-- **Tiozão:** personagem recorrente, potencial fonte de orientação e missões.
-- **Sardanisca:** personagem recorrente, a preservar conforme as histórias originais.
 
-As ilustrações definitivas devem respeitar as referências originais. Não inventar detalhes visuais ou narrativos que contradigam o material existente.
+- **Pinguim Alfredo:** protagonista controlado pelo jogador; usa chapéu de explorador.
+- **Irmãozinho:** companheiro permanente, segue Alfredo pelo percurso sem atravessar obstáculos.
+- **Medusa Musical:** apresenta o enigma do som perdido.
+- **Tiozão:** pescador à procura dos dois peixes-gato mágicos.
+- **Sardanisca Dentista:** trata animais marinhos feridos e cuida dos peixes-gato.
+- **Peixes-gato branco e preto:** guiam os irmãos até à gruta.
+- **Guarda da espada e guarda da lança:** propõem o enigma das caixas na Feira de LEGO.
+- **Arqueólogo Malfeitor:** guarda os Blocos Mágicos no museu.
+- **Polvo, gaivota e caranguejo:** pacientes da Sardanisca na gruta.
 
-## História e progressão
-A aventura começa numa ilha inicial. O jogador aprende a mover-se, interagir, recolher objetos e falar com personagens. Encontra um mapa e inicia a missão de reunir peças LEGO para construir uma jangada. A jangada permite alcançar outras regiões. A história deve avançar por capítulos, sem contradizer os acontecimentos originais.
+Cada NPC tem um sprite SVG próprio; esse mesmo recurso é mostrado como avatar na caixa de diálogo.
 
-## Regiões planeadas
-1. **Praia do Começo:** tutorial, mapa, NPCs e peças LEGO para a jangada.
-2. **Floresta dos Sussurros:** exploração, pistas, objetos escondidos e caminhos secretos.
-3. **Grutas dos Ecos:** enigmas, símbolos, sequências e mecanismos.
-4. **Arquipélago das Estrelas:** navegação, ilhas secundárias, objetos raros e portais.
+## Zonas e progressão
 
-As regiões devem estar ligadas por caminhos, praias, pontes, grutas e navegação, e o mundo deve poder crescer sem reescrever o motor.
+1. **Praia do Começo:** Alfredo encontra a mensagem na garrafa, recolhe o mapa e parte na jangada LEGO.
+2. **Caminho das Medusas:** os irmãos observam o grupo de medusas e atravessam o caminho sobre elas.
+3. **Tempestade dos Sons:** a Medusa Musical pede a construção de uma nota e de uma caixa musical para abrir a passagem.
+4. **Ilhota do Farol:** o Tiozão pede ajuda para atrair os peixes-gato com redes e um isco musical.
+5. **Gruta da Sardanisca Dentista:** os irmãos encontram os animais em tratamento e ajudam o Tiozão e a Sardanisca a cuidar juntos dos peixes-gato.
+6. **Cidade e Feira de LEGO:** os guardas apresentam o enigma das caixas; no museu, o Arqueólogo aprende a partilhar os Blocos Mágicos.
 
-## Desafios e desbloqueios
-- Recolha de objetos e peças.
-- Enigmas de lógica, símbolos e sequências.
-- Perguntas de conhecimento e memória feitas por NPCs.
-- Descoberta de passagens secretas.
-- Ativação de mecanismos e portais.
-- Missões de ajuda a personagens.
-- Desbloqueios por itens, respostas, exploração, missões ou progressão.
+As zonas são desbloqueadas em sequência, seguindo os capítulos 1–11. O ecrã inicial apresenta o prefácio e permite continuar um progresso guardado ou começar uma aventura nova.
 
-Uma resposta errada não deve bloquear permanentemente a história. Devem existir pistas e novas tentativas.
+## Sistemas implementados
 
-## Sistemas de jogo
-- Movimento, colisões e interação por proximidade.
-- Câmara que acompanha o protagonista.
-- Companheiro com seguimento e recuperação quando fica preso.
-- Inventário, diário, missões e recompensas.
-- Diálogos com retratos e expressões.
-- Mapa de mundo e regiões desbloqueadas.
-- Gravação local de progresso e opção de reiniciar.
+- Movimento em quatro direções, corrida, colisão e interação por proximidade.
+- Companheiro com procura de percurso sobre os tiles transitáveis.
+- Mapas em grelha, passagens entre zonas, objetos e objetivos narrativos.
+- Diálogos com escolhas e retratos de NPC.
+- Música por zona, controlada pelo jogador e com troca automática.
+- Progresso local em `localStorage` e opção de reiniciar.
 
 ## Direção artística
-Mundo em pixel art 2D, com tilesets e sprites animados. Retratos e ilustrações com linguagem de livro infantil, pintura artesanal, cores quentes, formas suaves e expressividade. Os retratos e sprites devem representar consistentemente as mesmas personagens.
+
+Mundo 2D de inspiração pixel art, com mapas em tiles e sprites SVG de formas simples e cores distintas. Os retratos e sprites usam a mesma ilustração para manter a identidade visual das personagens.
 
 ## Tecnologia
+
 - HTML5, CSS3 e JavaScript.
-- Canvas 2D para renderização.
-- `requestAnimationFrame` para o ciclo do jogo.
-- Mapas tile-based, com camadas de terreno, decoração, colisões e objetos.
-- `localStorage` para gravação local.
-- Sem backend obrigatório; publicação estática em GitHub Pages.
-- O protótipo atual é distribuído em `index.html`; modularizar gradualmente em `src/` e `data/`.
+- Canvas 2D e `requestAnimationFrame`.
+- Mapas tile-based e `localStorage`.
+- Protótipo jogável concentrado em `index.html`, publicável como site estático.

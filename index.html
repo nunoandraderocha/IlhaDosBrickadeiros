@@ -1,53 +1,244 @@
-<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>A Ilha dos Brincadeiros — v3</title><style>
+<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>A Ilha dos Brincadeiros — v4</title><style>
 :root{--ink:#203b3b;--cream:#fff2c9;--gold:#f2c66d}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 0,#315c60,#102d37 75%);color:var(--cream);font-family:Trebuchet MS,system-ui,sans-serif;min-height:100vh;display:grid;place-items:center}.wrap{width:min(1100px,100%);padding:14px}.top{display:flex;justify-content:space-between;align-items:end;gap:10px;margin:0 4px 10px}h1{font-size:clamp(20px,4vw,30px);margin:0;color:#ffe69a;text-shadow:2px 3px #694b39;letter-spacing:1px}.sub{font-size:12px;color:#b9d9c9}.frame{position:relative;border:5px solid #e9c77e;border-radius:14px;overflow:hidden;background:#164b55;box-shadow:0 14px 42px #0009}canvas{display:block;width:100%;height:auto;image-rendering:pixelated}.hud{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}.pill{background:#173d44;border:1px solid #547d70;border-radius:22px;padding:7px 11px;font-size:12px}.panel{position:absolute;inset:auto 2.5% 2.5%;display:none;grid-template-columns:66px 1fr;gap:12px;padding:12px 15px;border:3px solid #fff0c3;border-radius:13px;background:linear-gradient(135deg,#254e59,#142f3b);box-shadow:0 5px #70543b;min-height:110px}.panel.show{display:grid}.portrait{width:62px;height:62px;border-radius:12px;background:#f3dba0;display:grid;place-items:center;font-size:39px;border:2px solid #fff0c3}.speaker{font-weight:bold;color:#ffe28c;margin-bottom:4px}.msg{font-size:14px;line-height:1.4}.hint{font-size:11px;color:#b6d8ce;margin-top:7px}.choices{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.choices button,.mobile button,.smallbtn{background:#315c5b;color:#fff0c7;border:1px solid #a4c4a2;border-radius:8px;padding:8px 12px;cursor:pointer}.choices button:hover,.smallbtn:hover{background:#47786b}.mobile{display:none;justify-content:space-between;align-items:center;margin-top:12px}.pad{display:grid;grid-template-columns:repeat(3,44px);grid-template-rows:repeat(2,38px);gap:4px}.pad .up{grid-column:2}.pad .left{grid-column:1;grid-row:2}.pad .down{grid-column:2;grid-row:2}.pad .right{grid-column:3;grid-row:2}.mobile button{touch-action:none;font-size:16px}.action{height:52px;padding:0 18px!important}.help{font-size:11px;color:#c4d9ce;margin-top:8px}.maptag{color:#ffe49b;font-weight:bold}@media(max-width:700px){.mobile{display:flex}.sub{display:none}.panel{grid-template-columns:48px 1fr;padding:9px;min-height:92px}.portrait{width:46px;height:46px;font-size:30px}.msg{font-size:12px}.pill{font-size:10px;padding:6px 8px}}
-</style></head><body><main class="wrap"><header class="top"><div><h1>ILHA DOS BRINCADEIROS</h1><div class="sub">A aventura de Alfredo e do irmãozinho · Capítulo 1: O segredo da ilha</div></div><div class="sub">✦ Explora · Descobre · Constrói · Navega</div></header><div class="frame"><canvas id="game" width="960" height="640"></canvas><section class="panel" id="dialog"><div class="portrait" id="portrait">🐧</div><div><div class="speaker" id="speaker"></div><div class="msg" id="message"></div><div class="choices" id="choices"></div><div class="hint" id="hint">ESPAÇO / ENTER para continuar · ESC para fechar</div></div></section></div><div class="hud"><span class="pill" id="zone">🌴 Praia do Começo</span><span class="pill" id="objective">✦ Objetivo: encontra o Tiozão</span><span class="pill" id="inventory">🎒 Mochila: vazia</span><span class="pill" id="progress">🗺️ 1/4 zonas</span><span class="pill">⌨️ Setas/WASD mover · Espaço interagir</span><button class="smallbtn" id="reset">Reiniciar</button></div><div class="mobile"><div class="pad"><button class="up" data-key="ArrowUp">▲</button><button class="left" data-key="ArrowLeft">◀</button><button class="down" data-key="ArrowDown">▼</button><button class="right" data-key="ArrowRight">▶</button></div><button class="action" id="act">FALAR / AÇÃO</button></div><div class="help">Dica: aproxima-te das personagens, objetos brilhantes e passagens e carrega em Espaço. O jogo guarda automaticamente o progresso neste navegador.</div></main>
+</style><style>.start-screen[hidden]{display:none}.start-screen{position:fixed;inset:0;z-index:10;display:grid;place-items:center;overflow:auto;padding:20px;background:#102d37ef}.start-card{width:min(620px,100%);padding:clamp(22px,5vw,40px);border:4px solid #e9c77e;border-radius:20px;background:linear-gradient(145deg,#315c60,#173d44);box-shadow:0 18px 55px #0009;text-align:center}.start-emblem{font-size:clamp(44px,9vw,72px);line-height:1.2}.start-card h2{margin:8px 0 16px;color:#ffe69a;font-size:clamp(23px,5vw,34px)}.start-card p{max-width:510px;margin:12px auto;color:#fff2c9;font-size:clamp(14px,2.4vw,17px);line-height:1.65;text-align:left}.start-card .start-note{color:#c4d9ce;font-size:13px}.start-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:22px}.start-actions button{background:#e8c56e;color:#203b3b;border:2px solid #fff0c3;border-radius:10px;padding:12px 18px;font:700 15px Trebuchet MS,system-ui,sans-serif;cursor:pointer}.start-actions button:hover{background:#ffe69a}.start-actions button.secondary{background:#315c5b;color:#fff0c7}.start-actions button.secondary:hover{background:#47786b}.start-actions button[hidden]{display:none}</style></head><body><main class="wrap"><header class="top"><div><h1>ILHA DOS BRINCADEIROS</h1><div class="sub">A aventura de Alfredo e do irmãozinho · Capítulo 1: O Mistério da Ilha dos Blocos Perdidos</div></div><div class="sub">✦ Explora · Descobre · Constrói · Navega</div></header><div class="frame"><canvas id="game" width="960" height="640"></canvas><section class="panel" id="dialog"><div class="portrait" id="portrait">🐧</div><div><div class="speaker" id="speaker"></div><div class="msg" id="message"></div><div class="choices" id="choices"></div><div class="hint" id="hint">ESPAÇO / ENTER para continuar · ESC para fechar</div></div></section></div><div class="hud"><span class="pill" id="zone">🌴 Praia do Começo</span><span class="pill" id="objective">✦ Objetivo: Encontra o bilhete e o mapa antes de zarpar.</span><span class="pill" id="inventory">🎒 Mochila: vazia</span><span class="pill" id="progress">🗺️ 1/6 zonas</span><span class="pill">⌨️ Setas/WASD mover · Espaço interagir</span><button class="smallbtn" id="music-toggle" type="button" aria-pressed="false">♫ Música: desligada</button><button class="smallbtn" id="reset">Reiniciar</button></div><div class="mobile"><div class="pad"><button class="up" data-key="ArrowUp">▲</button><button class="left" data-key="ArrowLeft">◀</button><button class="down" data-key="ArrowDown">▼</button><button class="right" data-key="ArrowRight">▶</button></div><button class="action" id="act">FALAR / AÇÃO</button></div><div class="help" id="help">Dica: aproxima-te dos objetos e passagens e carrega em Espaço. Ativa a música no botão. O jogo guarda automaticamente o progresso neste navegador.</div><section class="start-screen" id="start-screen" aria-labelledby="start-title"><div class="start-card"><div class="start-emblem" aria-hidden="true">🐧 🧭 🛶</div><h2 id="start-title">Prefácio — O Mistério da Ilha dos Blocos Perdidos</h2><p>Alfredo é um pinguim aventureiro que percorre o mundo à procura dos blocos LEGO mais raros. Numa manhã envolta em nevoeiro, encontra na praia uma garrafa com um pedido de ajuda: os blocos mágicos da Ilha dos Brincadeiros desapareceram.</p><p>Sem hesitar, chama o irmãozinho, prepara a mochila e parte numa jangada de LEGO. Juntos vão atravessar caminhos de medusas, enfrentar uma tempestade musical e conhecer amigos que os ajudarão a encontrar os blocos.</p><p class="start-note">Explora a ilha, fala com as personagens e ajuda-as pelo caminho. O progresso fica guardado neste navegador.</p><div class="start-actions"><button id="start-continue" type="button">Começar a aventura</button><button id="start-new" class="secondary" type="button" hidden>Nova aventura</button></div></div></section></main>
 <script>
 (()=>{'use strict';const c=document.getElementById('game'),g=c.getContext('2d'),W=c.width,H=c.height,S=40,MW=34,MH=26;const $=id=>document.getElementById(id);let keys={},dialog=null,cam={x:0,y:0},last=0;
 const zones=[
 {name:'Praia do Começo',sky:'#4dabb0',grass:'#75b96d',sand:'#e8ce8a',path:'#c9a96d',decor:'palms'},
-{name:'Floresta dos Sussurros',sky:'#397d70',grass:'#43865c',sand:'#b9a96e',path:'#b99a62',decor:'forest'},
-{name:'Grutas dos Ecos',sky:'#536d7c',grass:'#657c78',sand:'#b8a77c',path:'#9b927d',decor:'cave'},
-{name:'Arquipélago das Estrelas',sky:'#568fa4',grass:'#63a9a0',sand:'#e5d59a',path:'#d4b978',decor:'stars'}];
-const state={zone:0,x:7,y:12,face:0,step:0,items:[],flags:{met:false,map:false,raft:false,riddle:false,crystal:false,starGate:false},unlocked:[0],talked:{},brother:{x:6.2,y:12.5}};
-try{const saved=JSON.parse(localStorage.getItem('brincadeiros_v3'));if(saved&&saved.v===3)Object.assign(state,saved.state)}catch(e){}
-const maps=zones.map((z,zi)=>{let a=Array.from({length:MH},(_,y)=>Array.from({length:MW},(_,x)=> (x<2||y<2||x>MW-3||y>MH-3)?1:0));const put=(x,y,t)=>{if(a[y]&&a[y][x]!==undefined)a[y][x]=t};for(let x=2;x<MW-2;x++){put(x,13,2);put(x,14,2)}for(let y=4;y<22;y++)put(17,y,2);for(let i=0;i<32;i++){let x=3+(i*7+zi*11)%27,y=3+(i*9+zi*5)%19;if(Math.abs(x-7)>3&&Math.abs(y-12)>3)put(x,y,3)}if(zi===0){for(let y=8;y<18;y++)for(let x=4;x<12;x++)if(a[y][x]===3)put(x,y,0);[[14,8],[15,8],[22,18],[24,9],[10,20]].forEach(([x,y])=>put(x,y,4))}if(zi===1){for(let x=6;x<29;x++)put(x,13,2);[[9,7],[24,18],[28,6],[15,20]].forEach(([x,y])=>put(x,y,4))}if(zi===2){for(let x=4;x<30;x++)put(x,13,2);for(let y=5;y<22;y++)put(17,y,2);[[8,8],[13,19],[25,8]].forEach(([x,y])=>put(x,y,4))}if(zi===3){for(let x=3;x<31;x++)put(x,13,2);[[7,7],[12,18],[23,8],[28,19]].forEach(([x,y])=>put(x,y,4))}return a});
-const actors=[
-[{id:'tio',x:10,y:11,name:'Tiozão',emoji:'🧔🏻',kind:'npc'},{id:'map',x:14,y:8,name:'Mapa antigo',emoji:'🗺️',kind:'item'},{id:'lego1',x:22,y:18,name:'Peça LEGO azul',emoji:'🧱',kind:'item'},{id:'lego2',x:24,y:9,name:'Peça LEGO vermelha',emoji:'🧱',kind:'item'},{id:'lego3',x:10,y:20,name:'Peça LEGO amarela',emoji:'🧱',kind:'item'},{id:'sard',x:7,y:5,name:'Sardanisca',emoji:'🦎',kind:'npc'},{id:'raft',x:29,y:13,name:'Cais da jangada',emoji:'🛶',kind:'gate'}],
-[{id:'forestnpc',x:8,y:6,name:'Guardião da Floresta',emoji:'🦉',kind:'npc'},{id:'leaf',x:24,y:18,name:'Folha luminosa',emoji:'🍃',kind:'item'},{id:'shell',x:28,y:6,name:'Concha cantante',emoji:'🐚',kind:'item'},{id:'bridge',x:31,y:13,name:'Ponte das perguntas',emoji:'🌉',kind:'gate'},{id:'crystal',x:15,y:20,name:'Cristal verde',emoji:'💎',kind:'item'}],
-[{id:'echo',x:8,y:8,name:'Eco da Gruta',emoji:'🪨',kind:'npc'},{id:'torch',x:13,y:19,name:'Lanterna antiga',emoji:'🏮',kind:'item'},{id:'gem',x:25,y:8,name:'Cristal azul',emoji:'💎',kind:'item'},{id:'gate3',x:31,y:13,name:'Portal de maré',emoji:'🌀',kind:'gate'}],
-[{id:'star',x:7,y:7,name:'Estrela caída',emoji:'⭐',kind:'item'},{id:'keeper',x:23,y:8,name:'Guardião das Estrelas',emoji:'🧙',kind:'npc'},{id:'treasure',x:28,y:19,name:'Caixa de música',emoji:'🎁',kind:'item'}]
+{name:'Caminho das Medusas',sky:'#258ba2',grass:'#338fa2',sand:'#83d9d4',path:'#dbb9e8',decor:'jellyfish'},
+{name:'Tempestade dos Sons',sky:'#334b78',grass:'#495a86',sand:'#9fb5cf',path:'#b6c8dd',decor:'storm'},
+{name:'Ilhota do Farol',sky:'#e59167',grass:'#6f9d5a',sand:'#e8ce8a',path:'#b9905e',decor:'lighthouse'},
+{name:'Gruta da Sardanisca Dentista',sky:'#273d54',grass:'#526c69',sand:'#8c927f',path:'#b99b62',decor:'cave'},
+{name:'Cidade e Feira de LEGO',sky:'#78b9d1',grass:'#80bb75',sand:'#e9cf8a',path:'#d2b970',decor:'lego-city'}];
+const musicTracks=[
+ {src:'assets/audio/autism-island.ogg',title:'Autism Island'},
+ {src:'assets/audio/theme-song-opening.wav',title:'Theme Song [8-bit] — abertura',loop:false,next:'assets/audio/theme-song-loop.wav'},
+ {src:'assets/audio/the-adventure-begins.wav',title:'The Adventure Begins'},
+ {src:'assets/audio/autism-island.ogg',title:'Autism Island'},
+ {src:'assets/audio/the-adventure-begins.wav',title:'The Adventure Begins'},
+ {src:'assets/audio/theme-song-loop.wav',title:'Theme Song [8-bit] — loop'}
 ];
-function save(){localStorage.setItem('brincadeiros_v3',JSON.stringify({v:3,state}))}function has(id){return state.items.includes(id)}function add(id,label){if(!has(id)){state.items.push(id);say('Descoberta!',`Guardaste: ${label}.`, '🎒');save();updateHud()}}
-function say(who,msg,emoji='🐧',choices=[]){dialog={who,msg,emoji,choices};$('speaker').textContent=who;$('message').textContent=msg;$('portrait').textContent=emoji;$('choices').innerHTML='';choices.forEach((ch,i)=>{let b=document.createElement('button');b.textContent=ch.label;b.onclick=()=>{let fn=ch.fn;closeDialog();fn()};$('choices').appendChild(b)});$('hint').textContent=choices.length?'Escolhe uma resposta':'ESPAÇO / ENTER para continuar · ESC para fechar';$('dialog').classList.add('show')}
+const music=new Audio();music.preload='none';music.volume=.35;let musicEnabled=false,activeTrack=-1;
+const initialState=()=>({zone:0,x:7,y:12,face:0,step:0,action:'idle',actionTime:0,moving:false,running:false,celebrating:false,items:[],flags:{bottle:false,map:false,raft:false,medusasSeen:false,medusaMet:false,musicNote:false,musicBox:false,musicDelivered:false,tioMet:false,lureBuilt:false,catsFound:false,clinicResolved:false,guardsSolved:false,museumPass:false,blocksReturned:false},unlocked:[0],talked:{},brother:{x:6.2,y:12.5,face:0,step:0}});
+const state=initialState();let hasSavedProgress=false,gameStarted=false;
+try{const saved=JSON.parse(localStorage.getItem('brincadeiros_v4'));if(saved&&saved.v===4){Object.assign(state,saved.state);hasSavedProgress=true}}catch(error){console.error('Não foi possível ler o progresso guardado:',error)}
+if(state.zone>=zones.length)state.zone=0;
+const maps=zones.map((zone,zi)=>{
+ const tiles=Array.from({length:MH},()=>Array(MW).fill(0));
+ const put=(x,y,t)=>{if(tiles[y]&&tiles[y][x]!==undefined)tiles[y][x]=t};
+ if(zi===0||zi===3){
+  for(let y=0;y<MH;y++)for(let x=0;x<MW;x++)put(x,y,6);
+  for(let y=3;y<23;y++)for(let x=3;x<31;x++){
+   const dx=(x-16.5)/14.5,dy=(y-12.5)/10.5,r=dx*dx+dy*dy;
+   const coast=1+Math.sin(x*1.7+y*.8)*.035+Math.cos(y*1.3-x*.4)*.025;
+   if(r<coast)put(x,y,r>.72?7:0);
+  }
+  for(let x=8;x<29;x++)put(x,13,2);
+  for(let y=8;y<18;y++)put(16,y,2);
+  const islandTrees=zi===0?[[7,7],[12,5],[21,6],[27,8],[8,18],[12,20],[23,20],[27,17],[19,16],[5,12],[10,10],[25,10]]:[[7,7],[12,5],[21,6],[8,18],[12,20],[23,20],[19,16],[5,12],[10,10]];
+  islandTrees.forEach(([x,y])=>put(x,y,3));
+  if(zi===0){[[29,12],[30,12],[29,13],[30,13]].forEach(([x,y])=>put(x,y,5));[[14,8],[22,18],[26,7],[9,19]].forEach(([x,y])=>put(x,y,4))}
+  else{put(25,7,8);put(13,10,9);[[9,13],[11,13],[13,13],[19,13],[21,13],[23,13],[25,13],[27,13]].forEach(([x,y])=>put(x,y,4))}
+ }else if(zi===1||zi===2){
+  for(let y=0;y<MH;y++)for(let x=0;x<MW;x++)put(x,y,6);
+  for(let x=2;x<32;x++)for(let y=12;y<=14;y++)put(x,y,2);
+  if(zi===1){for(let x=5;x<29;x+=2)put(x,12+(x%3),3);for(let x=7;x<30;x+=3)put(x,14,4)}
+  else{for(let x=3;x<31;x+=4)put(x,10,3);for(let x=4;x<30;x+=5)put(x,16,3);[[15,12],[16,12],[17,12],[18,12],[15,14],[16,14],[17,14],[18,14]].forEach(([x,y])=>put(x,y,4))}
+ }else if(zi===4){
+  for(let y=1;y<MH-1;y++)for(let x=1;x<MW-1;x++)put(x,y,0);
+  for(let x=1;x<MW-1;x++){put(x,1,1);put(x,MH-2,1)}
+  for(let y=1;y<MH-1;y++){put(1,y,1);put(MW-2,y,1)}
+  for(let x=4;x<30;x++)put(x,13,2);
+  for(let y=7;y<20;y++)put(17,y,2);
+  [[7,7],[11,10],[23,8],[27,18],[9,19],[24,16]].forEach(([x,y])=>put(x,y,3));
+ }else{
+  for(let x=2;x<MW-2;x++){put(x,13,2);put(x,14,2)}
+  for(let y=4;y<22;y++)put(17,y,2);
+  for(let x=4;x<10;x++)for(let y=5;y<9;y++)put(x,y,3);
+  for(let x=12;x<16;x++)for(let y=17;y<21;y++)put(x,y,3);
+  for(let x=21;x<27;x++)for(let y=5;y<10;y++)put(x,y,3);
+  for(let x=23;x<29;x++)for(let y=17;y<21;y++)put(x,y,3);
+ }
+ return tiles;
+});
+if(state.zone>=zones.length)state.zone=0;
+if(blocked(state.x,state.y)){state.x=7;state.y=12;state.brother.x=6.2;state.brother.y=12.5}
+const actors=[
+ [{id:'bottle',x:7,y:14,name:'Garrafa com bilhete',emoji:'🍾',kind:'item'},{id:'map',x:14,y:8,name:'Mapa antigo',emoji:'🗺️',kind:'item'},{id:'sign',x:12,y:12,name:'Placa do cais',emoji:'🪧',kind:'prop'},{id:'raft',x:29,y:13,name:'Jangada LEGO',emoji:'🛶',kind:'gate'}],
+ [{id:'jelly-group',x:12,y:13,name:'Grupo de medusas',emoji:'🪼',kind:'npc',sprite:'medusa-musical'},{id:'sea-route',x:30,y:13,name:'Fim do caminho de medusas',emoji:'🌊',kind:'gate'}],
+ [{id:'musical-medusa',x:18,y:13,name:'Medusa Musical',emoji:'🪼',kind:'npc',sprite:'medusa-musical'},{id:'sound-storm',x:30,y:13,name:'Caminho luminoso',emoji:'✨',kind:'gate'}],
+ [{id:'tiozao',x:14,y:11,name:'Tiozão',emoji:'🧔🏻',kind:'npc',sprite:'tiozao'},{id:'fish-white',x:23,y:10,name:'Peixe-gato branco',emoji:'🐟',kind:'npc',sprite:'peixe-gato-branco',visibleWhen:'lureBuilt'},{id:'fish-black',x:25,y:10,name:'Peixe-gato preto',emoji:'🐈‍⬛',kind:'npc',sprite:'peixe-gato-preto',visibleWhen:'lureBuilt'},{id:'fishing-raft',x:29,y:13,name:'Jangada de pesca',emoji:'🛶',kind:'gate'}],
+ [{id:'sardanisca',x:17,y:10,name:'Sardanisca Dentista',emoji:'🦎',kind:'npc',sprite:'sardanisca-dentista'},{id:'tiozao-cave',x:11,y:13,name:'Tiozão',emoji:'🧔🏻',kind:'npc',sprite:'tiozao'},{id:'cave-cat-white',x:21,y:16,name:'Peixe-gato branco',emoji:'🐟',kind:'npc',sprite:'peixe-gato-branco'},{id:'cave-cat-black',x:23,y:16,name:'Peixe-gato preto',emoji:'🐈‍⬛',kind:'npc',sprite:'peixe-gato-preto'},{id:'clinic-exit',x:30,y:13,name:'Saída da gruta',emoji:'🌅',kind:'gate'},{id:'octopus-patient',x:7,y:8,name:'Polvo em tratamento',emoji:'🐙',kind:'npc',sprite:'polvo-paciente'},{id:'gull-patient',x:25,y:8,name:'Gaivota em tratamento',emoji:'🪽',kind:'npc',sprite:'gaivota-paciente'},{id:'crab-patient',x:9,y:18,name:'Caranguejo em tratamento',emoji:'🦀',kind:'npc',sprite:'caranguejo-paciente'}],
+ [{id:'guard-white',x:11,y:13,name:'Guarda da espada',emoji:'⚔️',kind:'npc',sprite:'guarda-branco'},{id:'guard-black',x:14,y:13,name:'Guarda da lança',emoji:'🛡️',kind:'npc',sprite:'guarda-negro'},{id:'box-left',x:19,y:12,name:'Caixa da esquerda',emoji:'📦',kind:'item'},{id:'box-right',x:22,y:12,name:'Caixa da direita',emoji:'📦',kind:'item'},{id:'archaeologist',x:27,y:8,name:'Arqueólogo Malfeitor',emoji:'🧔',kind:'npc',sprite:'arqueologo-malfeitor'},{id:'magic-ark',x:28,y:18,name:'Arca dos Blocos Mágicos',emoji:'🧰',kind:'item'}]
+];
+const npcImages={};
+function npcSprite(id){if(!npcImages[id]){const image=new Image();image.src=`assets/sprites/characters/${id}.svg`;npcImages[id]=image}return npcImages[id]}
+function save(){localStorage.setItem('brincadeiros_v4',JSON.stringify({v:4,state}))}function has(id){return state.items.includes(id)}function add(id,label){if(!has(id)){state.items.push(id);say('Descoberta!',`Guardaste: ${label}.`, '🎒');save();updateHud()}}
+function say(who,msg,emoji='🐧',choices=[],sprite=''){dialog={who,msg,emoji,choices};$('speaker').textContent=who;$('message').textContent=msg;const portrait=$('portrait');portrait.replaceChildren();if(sprite){const image=document.createElement('img');image.src=`assets/sprites/characters/${sprite}.svg`;image.alt=`Retrato de ${who}`;image.style.width='54px';image.style.height='54px';image.style.objectFit='contain';portrait.appendChild(image)}else portrait.textContent=emoji;$('choices').innerHTML='';choices.forEach(ch=>{let b=document.createElement('button');b.textContent=ch.label;b.onclick=()=>{let fn=ch.fn;closeDialog();fn()};$('choices').appendChild(b)});$('hint').textContent=choices.length?'Escolhe uma resposta':'ESPAÇO / ENTER para continuar · ESC para fechar';$('dialog').classList.add('show')}
+function npcSay(id,msg,choices=[]){const actor=actors.flat().find(entry=>entry.id===id);if(!actor)throw new Error(`NPC não encontrado: ${id}`);say(actor.name,msg,actor.emoji,choices,actor.sprite)}
 function closeDialog(){dialog=null;$('dialog').classList.remove('show')}function next(){if(!dialog)return; if(dialog.choices?.length)return;closeDialog()}
-function unlock(z,x=5,y=13){if(!state.unlocked.includes(z))state.unlocked.push(z);state.zone=z;state.x=x;state.y=y;state.brother.x=x-1;state.brother.y=y+.5;save();updateHud();say('Nova zona!',`Chegaste a ${zones[z].name}! O irmãozinho não te larga.`, '🐧')}
-function interact(){if(dialog){next();return}let list=actors[state.zone],near=list.map(a=>({...a,d:Math.hypot(a.x-state.x,a.y-state.y)})).filter(a=>a.d<1.65).sort((a,b)=>a.d-b.d)[0];if(!near){say('Alfredo','Parece que não há nada aqui... talvez tenha de explorar mais um bocadinho.','🐧');return}const id=near.id;
-if(id==='tio'){state.flags.met=true;save();say('Tiozão','Alfredo! Ainda bem que chegaste. Encontrei um mapa antigo, mas a maré levou algumas peças da jangada. Procura três peças LEGO pela praia!','🧔🏻')}
-else if(id==='map'){if(!state.flags.map){state.flags.map=true;add('mapa','Mapa antigo');say('Alfredo','Um mapa com quatro lugares misteriosos! A ilha é muito maior do que parecia.','🐧')}else say('Mapa antigo','O mapa mostra a Floresta dos Sussurros, as Grutas dos Ecos e o Arquipélago das Estrelas.','🗺️')}
-else if(id.startsWith('lego')){add(id,near.name);if(['lego1','lego2','lego3'].every(has)){state.flags.raft=true;save();say('Tiozão','Fantástico! Temos as três peças. Com elas podemos terminar a jangada. O cais já está pronto!','🧔🏻')} }
-else if(id==='sard')say('Sardanisca','Pssst! Ouvi dizer que a chave do mapa só aparece a quem observa com atenção. Já viste o mapa antigo?','🦎')
-else if(id==='raft'){if(state.flags.raft){say('Tiozão','A jangada está pronta! Vamos navegar até à floresta?','🧔🏻',[{label:'Vamos navegar!',fn:()=>unlock(1,4,13)},{label:'Ainda não',fn:()=>{}}])}else say('Cais','A jangada precisa de três peças LEGO. Já encontraste '+['lego1','lego2','lego3'].filter(has).length+' de 3.','🛶')}
-else if(id==='forestnpc')say('Guardião da Floresta','Para atravessar a ponte, responde ao enigma: qual destes objetos ilumina a escuridão?','🦉',[{label:'Uma lanterna',fn:()=>{state.flags.riddle=true;save();say('Guardião','Muito bem! A resposta está certa. A passagem para as grutas está aberta.','🦉')}},{label:'Uma concha',fn:()=>say('Guardião','Não é essa! Pensa no que usamos quando falta luz.','🦉')},{label:'Uma folha',fn:()=>say('Guardião','Ainda não. Tenta outra vez!','🦉')}])
-else if(id==='leaf'||id==='shell'||id==='crystal'||id==='torch'||id==='gem'||id==='star'||id==='treasure')add(id,near.name)
-else if(id==='bridge'){if(state.flags.riddle&&has('leaf'))say('Ponte','A folha luminosa e a resposta certa ativaram a ponte. Queres atravessar para as Grutas dos Ecos?','🌉',[{label:'Atravessar',fn:()=>unlock(2,4,13)},{label:'Depois',fn:()=>{}}]);else say('Ponte','A ponte precisa de uma resposta certa ao enigma e de uma folha luminosa.','🌉')}
-else if(id==='echo')say('Eco da Gruta','O som viaja mais longe aqui... encontra a lanterna e o cristal azul. O portal precisa de duas luzes para abrir.','🪨')
-else if(id==='gate3'){if(has('torch')&&has('gem'))say('Portal','As duas luzes despertaram o portal. Queres seguir para o Arquipélago das Estrelas?','🌀',[{label:'Entrar no portal',fn:()=>unlock(3,4,13)},{label:'Mais tarde',fn:()=>{}}]);else say('Portal','Preciso de duas luzes: uma lanterna antiga e um cristal azul.','🌀')}
-else if(id==='keeper'){if(has('star'))say('Guardião','A estrela caída voltou ao seu lugar. A caixa de música está segura. Esta aventura ainda guarda muitos segredos!','🧙');else say('Guardião','Uma estrela caiu perto daqui. Encontra-a e traz de volta a sua luz.','🧙')}
-else say(near.name,'Olá, explorador! Continua a aventura. ',near.emoji);updateHud()}
-function updateHud(){let z=state.zone;$('zone').textContent='📍 '+zones[z].name;$('inventory').textContent='🎒 Mochila: '+(state.items.length?state.items.length+' objetos':'vazia');$('progress').textContent='🗺️ '+state.unlocked.length+'/4 zonas';let obj=z===0?(state.flags.raft?'Vai ao cais e navega para a floresta':`Encontra as 3 peças LEGO (${['lego1','lego2','lego3'].filter(has).length}/3)`):z===1?(state.flags.riddle&&has('leaf')?'Atravessa a ponte para as grutas':'Resolve o enigma e encontra a folha luminosa'):z===2?(has('torch')&&has('gem')?'Ativa o portal de maré':'Encontra a lanterna e o cristal azul'):(has('star')?'Fala com o Guardião das Estrelas':'Encontra a estrela caída');$('objective').textContent='✦ Objetivo: '+obj}
-function blocked(x,y){let a=maps[state.zone][Math.floor(y)]?.[Math.floor(x)];return a===undefined||a===1||a===3}
-function move(dx,dy){if(dialog)return;let nx=state.x+dx*.12,ny=state.y+dy*.12;if(!blocked(nx,ny)){state.x=nx;state.y=ny;state.face=dx<0?1:dx>0?2:dy<0?3:0;state.step+=.25}let bx=state.x-dx*1.1,by=state.y-dy*1.1;if(!blocked(bx,by)){state.brother.x+=(bx-state.brother.x)*.18;state.brother.y+=(by-state.brother.y)*.18}}
-function penguin(x,y,scale=1,small=false){g.save();g.translate(x,y);g.scale(scale,scale);let bob=Math.sin(state.step*2)*1.5;g.translate(0,bob);g.fillStyle='#173b48';g.beginPath();g.ellipse(0,0,13,17,0,0,Math.PI*2);g.fill();g.fillStyle='#f5f1dc';g.beginPath();g.ellipse(0,4,8.5,11,0,0,Math.PI*2);g.fill();g.fillStyle='#fff';g.beginPath();g.arc(-4,-7,3,0,7);g.arc(4,-7,3,0,7);g.fill();g.fillStyle='#142e35';g.beginPath();g.arc(-3,-7,1.4,0,7);g.arc(5,-7,1.4,0,7);g.fill();g.fillStyle='#f2a84c';g.beginPath();g.moveTo(-3,-1);g.lineTo(4,-1);g.lineTo(0,3);g.closePath();g.fill();g.fillStyle='#eaa34d';g.beginPath();g.ellipse(-7,15,5,2.5,-.2,0,7);g.ellipse(7,15,5,2.5,.2,0,7);g.fill();if(!small){g.fillStyle='#347fb1';g.fillRect(-10,-17,20,5);g.fillStyle='#e8c56e';g.fillRect(-3,-22,6,6);g.fillStyle='#fff0c8';g.fillRect(-2,-16,4,2)}else{g.fillStyle='#e6bd65';g.fillRect(-5,-18,10,3)}g.restore()}
-function tree(x,y,variant=0){g.fillStyle='#604a37';g.fillRect(x-4,y-3,8,15);g.fillStyle=variant?'#27684f':'#367c4d';g.beginPath();g.arc(x,y-9,14,0,7);g.arc(x-9,y-4,9,0,7);g.arc(x+9,y-4,9,0,7);g.fill();g.fillStyle='#77ad61';g.beginPath();g.arc(x-4,y-15,5,0,7);g.fill()}
-function draw(){let z=zones[state.zone],maxX=MW*S-W,maxY=MH*S-H;cam.x=Math.max(0,Math.min(maxX,state.x*S-W/2));cam.y=Math.max(0,Math.min(maxY,state.y*S-H/2));g.fillStyle=z.sky;g.fillRect(0,0,W,H);let map=maps[state.zone];for(let y=Math.floor(cam.y/S);y<Math.min(MH,Math.ceil((cam.y+H)/S)+1);y++)for(let x=Math.floor(cam.x/S);x<Math.min(MW,Math.ceil((cam.x+W)/S)+1);x++){let t=map[y][x],px=x*S-cam.x,py=y*S-cam.y;g.fillStyle=t===1?z.sand:t===2?z.path:z.grass;g.fillRect(px,py,S,S);if(t===0){g.fillStyle='#ffffff12';g.fillRect(px+((x*13+y*7)%31),py+((x*5+y*11)%29),3,3)}if(t===3)tree(px+20,py+24,state.zone===1);if(t===4){g.fillStyle='#8bc9d1';g.beginPath();g.arc(px+20,py+20,8,0,7);g.fill();g.fillStyle='#e8ffff';g.fillRect(px+17,py+10,6,20)}}
-// actor items and characters
-for(const a of actors[state.zone]){if(a.kind==='item'&&state.items.includes(a.id))continue;let x=a.x*S-cam.x,y=a.y*S-cam.y;if(x<-30||x>W+30||y<-30||y>H+30)continue;g.fillStyle='#0004';g.beginPath();g.ellipse(x,y+12,13,5,0,0,7);g.fill();if(a.kind==='npc'){g.font='25px serif';g.textAlign='center';g.fillText(a.emoji,x,y+3);g.fillStyle='#fff4d6';g.font='11px Trebuchet MS';g.fillText(a.name,x,y-20)}else{g.font='24px serif';g.textAlign='center';g.fillText(a.emoji,x,y+5);g.fillStyle='#ffe58c';g.beginPath();g.arc(x,y-18,3,0,7);g.fill()}}
-// exit markers on map edges
-if(state.zone===0){g.fillStyle='#8cdbd5';g.fillRect(29*S-cam.x,12*S-cam.y,30,40);g.font='12px sans-serif';g.fillText('CAIS',29*S-cam.x,12*S-cam.y-6)}if(state.zone===1||state.zone===2){g.fillStyle='#bce7cf';g.fillRect(30*S-cam.x,12*S-cam.y,30,40)}
-penguin(state.brother.x*S-cam.x,state.brother.y*S-cam.y,.72,true);penguin(state.x*S-cam.x,state.y*S-cam.y,1,false);
-// mini map
-let mx=W-145,my=14;g.fillStyle='#102d35cc';g.fillRect(mx,my,130,92);g.fillStyle='#fff0c4';g.font='10px Trebuchet MS';g.textAlign='left';g.fillText('MAPA',mx+8,my+13);for(let i=0;i<4;i++){g.fillStyle=state.unlocked.includes(i)?['#73c9b5','#7dbb77','#a2aebc','#e5cf83'][i]:'#465b5b';g.fillRect(mx+8+i*29,my+25,23,23);g.fillStyle='#102d35';g.fillText(''+(i+1),mx+16+i*29,my+40)}g.fillStyle='#fff0c4';g.fillText('Zonas '+state.unlocked.length+'/4',mx+8,my+68);g.fillText('Alfredo + irmão',mx+8,my+82);
+const musicNeedsServer=location.protocol==='file:';
+function updateMusicButton(status=''){const button=$('music-toggle');button.textContent=musicNeedsServer?'♫ Música: abre via servidor':musicEnabled?'♫ Música: ligada':status?'♫ Música indisponível':'♫ Música: desligada';button.title=musicNeedsServer?'Inicia um servidor local (python -m http.server 8000) para ouvir a música.':status||`Faixa: ${musicTracks[state.zone].title}`;button.setAttribute('aria-pressed',String(musicEnabled));button.disabled=musicNeedsServer;$('help').textContent=musicNeedsServer?'Para ouvir música, inicia um servidor local com «python -m http.server 8000» e abre http://localhost:8000.':'Dica: aproxima-te dos objetos e passagens e carrega em Espaço. Ativa a música no botão. O jogo guarda automaticamente o progresso neste navegador.'}
+function handleMusicError(error){if(!musicEnabled)return;musicEnabled=false;updateMusicButton('Não foi possível carregar a faixa desta zona.');console.error('Falha ao reproduzir música de fundo:',error)}
+function playMusic(){const playback=music.play();if(playback)playback.catch(handleMusicError)}
+function setMusicForZone(){if(activeTrack===state.zone)return;activeTrack=state.zone;music.pause();if(musicNeedsServer){updateMusicButton();return}music.src=musicTracks[state.zone].src;music.loop=musicTracks[state.zone].loop!==false;if(musicEnabled)playMusic();updateMusicButton()}
+function toggleMusic(){if(musicNeedsServer)return;if(musicEnabled){musicEnabled=false;music.pause();updateMusicButton();return}musicEnabled=true;setMusicForZone();updateMusicButton();playMusic()}
+music.addEventListener('error',()=>handleMusicError(music.error));
+music.addEventListener('ended',()=>{const track=musicTracks[state.zone];if(musicEnabled&&track.next){music.src=track.next;music.loop=true;playMusic()}});
+function unlock(z,x=4,y=13){if(!state.unlocked.includes(z))state.unlocked.push(z);state.zone=z;setMusicForZone();state.x=x;state.y=y;state.brother.x=x-1;state.brother.y=y+.5;brotherRoute=[];brotherRepath=0;celebrate();save();updateHud();say('Nova zona!',`Chegaste a ${zones[z].name}!`, '🐧')}
+function celebrate(){state.action='celebrate';state.actionTime=.01;state.celebrating=true}
+function interact(){
+ if(!gameStarted)return;
+ if(dialog){next();return}
+ state.action='interact';state.actionTime=.01;
+ const list=actors[state.zone].filter(a=>!a.visibleWhen||state.flags[a.visibleWhen]);
+ const near=list.map(a=>({...a,d:Math.hypot(a.x-state.x,a.y-state.y)})).filter(a=>a.d<1.65).sort((a,b)=>a.d-b.d)[0];
+ if(!near){say('Alfredo','Não há ninguém ou nada por perto que precise de atenção.','🐧');return}
+ const id=near.id,award=(item,label)=>{if(!has(item))state.items.push(item);save();updateHud();return label};
+ if(id==='bottle'){state.flags.bottle=true;save();say('Bilhete','«Ajuda! Os blocos mágicos desapareceram da Ilha dos Brincadeiros. Só um verdadeiro construtor os poderá encontrar.» A aventura começa!','🍾')}
+ else if(id==='map'){if(!state.flags.map){state.flags.map=true;add('mapa-antigo','Mapa antigo');say('Alfredo','O mapa mostra o caminho para o mar aberto. A jangada LEGO já está pronta!','🐧')}else say('Mapa antigo','O mapa marca o caminho das medusas, a ilha do farol, uma gruta e a Feira de LEGO.','🗺️')}
+ else if(id==='sign')say('Placa do cais','A jangada está pronta para partir. Segue o mapa e procura os blocos mágicos desaparecidos.','🪧')
+ else if(id==='raft'){if(state.flags.bottle&&state.flags.map)say('Alfredo','Bilhete guardado, mapa na mochila e irmãozinho a postos. Vamos navegar!','🐧',[{label:'Partir',fn:()=>unlock(1,4,13)},{label:'Ainda não',fn:()=>{}}]);else say('Alfredo','Antes de partir, procura o bilhete na garrafa e o mapa antigo.','🐧')}
+ else if(id==='jelly-group'){state.flags.medusasSeen=true;save();npcSay(id,'Ena! Quantas medusas aqui há! O caminho passa por cima delas. O irmão responde: «Acho que são um bilião!»')}
+ else if(id==='sea-route'){if(state.flags.medusasSeen)say('Alfredo','Chegámos ao fim do caminho de medusas. Vamos montar a jangada e continuar!','🐧',[{label:'Continuar a viagem',fn:()=>unlock(2,4,13)},{label:'Esperar',fn:()=>{}}]);else say('Alfredo','O caminho está coberto de medusas. Vamos aproximar-nos e observá-las.','🐧')}
+ else if(id==='musical-medusa'){
+  if(!state.flags.medusaMet){state.flags.medusaMet=true;award('golden-brick','Peça LEGO dourada');save();npcSay(id,'Sou a Medusa Musical. Para atravessarem a tempestade, resolvam o Enigma do Som Perdido. Guardem esta peça dourada: o símbolo é uma nota musical.')}
+  else if(!state.flags.musicNote)npcSay(id,'Construam uma nota musical tridimensional com os LEGOs de cristal que trazem na mochila. Quando estiver pronta, falem comigo.',[{label:'Construir a nota musical',fn:()=>{state.flags.musicNote=true;award('music-note','Nota musical de cristal');celebrate();npcSay(id,'A nota brilha e toca como um pequeno sino! Agora falta construir uma caixa musical.') }},{label:'Mais tarde',fn:()=>{}}])
+  else if(!state.flags.musicBox)npcSay(id,'A nota precisa de uma caixa mecânica LEGO para tocar a melodia das minhas memórias.',[{label:'Construir a caixa musical',fn:()=>{state.flags.musicBox=true;award('music-box','Caixa musical LEGO');celebrate();npcSay(id,'A melodia acordou as minhas memórias! Entreguem-me a caixa e a tempestade vai abrir caminho.') }},{label:'Mais tarde',fn:()=>{}}])
+  else if(!state.flags.musicDelivered)npcSay(id,'A melodia lembra-me o mar e as conchas. Posso receber a caixa musical?',[{label:'Entregar a caixa',fn:()=>{state.flags.musicDelivered=true;celebrate();save();npcSay(id,'Reconheço esta canção… é a música das minhas memórias. Obrigada! A tempestade desaparece e o mar abre-se.') }},{label:'Ficar com ela',fn:()=>{}}])
+  else say('Alfredo','As nuvens dissiparam-se. A jangada desliza por águas tranquilas e douradas!','🐧',[{label:'Navegar para a ilhota',fn:()=>unlock(3,4,13)}])
+ }
+ else if(id==='sound-storm'){if(state.flags.musicDelivered)say('Alfredo','O caminho luminoso está aberto. A próxima paragem é a ilhota do farol.','🐧',[{label:'Seguir o caminho',fn:()=>unlock(3,4,13)}]);else say('Alfredo','A tempestade musical ainda bloqueia a passagem. Falta resolver o enigma da Medusa Musical.','🐧')}
+ else if(id==='tiozao'){if(!state.flags.tioMet){state.flags.tioMet=true;save();npcSay(id,'Chamam-me Tiozão: pescador de bacalhau e caçador de mistérios. Procuro dois peixes-gato mágicos, um branco e outro preto. Precisamos de um isco que brilhe, flutue e cante!')}else if(!state.flags.lureBuilt)npcSay(id,'Vamos construir redes e um isco musical com as peças LEGO da jangada.',[{label:'Construir redes e isco',fn:()=>{state.flags.lureBuilt=true;award('musical-lure','Redes e isco musical');celebrate();npcSay(id,'Redes prontas! Vamos pescar e depois descansar junto ao farol.') }},{label:'Ainda não',fn:()=>{}}]);else npcSay(id,state.flags.catsFound?'Os peixes-gato estão a guiar a jangada até à gruta escondida!':'O isco está na água. Esperemos em silêncio pela maré da lua cheia.')}
+ else if(id==='fish-white'||id==='fish-black'){state.flags.catsFound=true;save();npcSay(id,'Miauuu! Os dois peixes-gato puxam a jangada em direção a uma gruta escondida entre as falésias.')}
+ else if(id==='fishing-raft'){if(state.flags.catsFound)say('Alfredo','Os peixes-gato estão a guiar-nos. Vamos segui-los até à gruta!','🐧',[{label:'Seguir os peixes',fn:()=>unlock(4,4,13)}]);else if(state.flags.lureBuilt)say('Alfredo','A rede musical está pronta. Os peixes-gato podem aparecer à noite.','🐧');else say('Alfredo','O Tiozão precisa de ajuda para construir redes e um isco musical.','🐧')}
+ else if(id==='sardanisca'){if(state.flags.clinicResolved)npcSay(id,'Os peixes-gato estão felizes aqui. Eu e o Tiozão cuidamos dos animais marinhos em conjunto.');else npcSay(id,'Sou a Sardanisca Dentista. Cuido dos animais marinhos feridos desta costa e estes dois peixes-gato são os meus pacientes!')}
+ else if(id==='tiozao-cave'){if(state.flags.clinicResolved)npcSay(id,'Eu e a Sardanisca cuidamos dos peixes-gato juntos. Agora são da família!');else npcSay(id,'Estes peixes-gato são meus! Andava à procura deles por todo o oceano.',[{label:'Propor que cuidem deles juntos',fn:()=>{state.flags.clinicResolved=true;celebrate();save();npcSay(id,'Talvez possamos cuidar deles juntos. A Sardanisca sorri: «Hum… talvez até não seja má ideia.»')}},{label:'Ouvir a Sardanisca',fn:()=>npcSay('sardanisca','São meus pacientes e mascotes. Cuido de todos os animais marinhos feridos desta costa.')}])}
+ else if(id==='cave-cat-white'||id==='cave-cat-black')npcSay(id,'Miauuuu! Os dois peixes-gato entrelaçam-se nas pernas do Tiozão e da Sardanisca, como se quisessem que cuidassem deles juntos.')
+ else if(id==='clinic-exit'){if(state.flags.clinicResolved)say('Alfredo','O Tiozão e a Sardanisca vão cuidar dos peixes-gato juntos. Está na hora de partir para a Feira de LEGO!','🐧',[{label:'Partir para a feira',fn:()=>unlock(5,4,13)}]);else npcSay('sardanisca','Talvez possamos cuidar deles juntos. Fala com o Tiozão e ajuda-os a entender-se.')}
+ else if(id==='octopus-patient')npcSay(id,'O polvo conta que a Sardanisca lhe engessou os tentáculos e lhe arranjou uma rede macia de algas.')
+ else if(id==='gull-patient')npcSay(id,'A gaivota agradece à dentista por lhe tratar a asa ferida.')
+ else if(id==='crab-patient')npcSay(id,'O caranguejo mostra a pinça enfaixada: já está a sentir-se melhor.')
+ else if(id==='guard-white'||id==='guard-black'){if(state.flags.museumPass)npcSay(id,'O bilhete está convosco. As portas do museu estão abertas.');else npcSay(id,'Alto lá! Um de nós só diz a verdade e o outro só mente. Uma caixa guarda o bilhete para entrar no museu; a outra esconde criaturas. Podem fazer uma pergunta.',[{label:'Perguntar o que o outro guarda diria',fn:()=>{state.flags.guardsSolved=true;save();npcSay(id,'A resposta aponta para a caixa da direita. Lembra-te: ao perguntar o que o outro diria, essa indicação é a errada.') }},{label:'Pensar mais um pouco',fn:()=>{}}])}
+ else if(id==='box-left'||id==='box-right'){if(!state.flags.guardsSolved)say('Alfredo','Ainda não sabemos qual caixa contém o bilhete. Tenho de fazer uma pergunta aos guardas.','🐧');else if(id==='box-left'){state.flags.museumPass=true;award('museum-ticket','Bilhete mágico da Feira LEGO');celebrate();say('Alfredo','Na caixa da esquerda está o bilhete mágico! Os guardas abrem o caminho para o museu.','🐧')}else say('Alfredo','Esta caixa está errada. A pergunta dos guardas indicava a caixa oposta. Vamos tentar a da esquerda!','🐧')}
+ else if(id==='archaeologist'){if(!state.flags.museumPass)npcSay(id,'Não podem entrar no meu museu secreto sem o bilhete da Feira LEGO.');else if(!state.flags.blocksReturned)npcSay(id,'Estes blocos mágicos são só meus! Passei anos à procura deles e não quero que ninguém estrague as minhas construções.',[{label:'Mostrar as construções da viagem',fn:()=>npcSay(id,'A jangada, a caixa musical, o farol e o consultório foram construídos em conjunto? Talvez brincar acompanhado seja melhor…', [{label:'Construir e brincar juntos',fn:()=>{state.flags.blocksReturned=true;award('magic-blocks','Blocos Mágicos');celebrate();npcSay(id,'Têm razão. Os blocos são para construir juntos. Levem-nos e vamos abrir um Castelo LEGO dos Sonhos para todos!')}},{label:'Continuar a aventura',fn:()=>{}}])},{label:'Falar mais tarde',fn:()=>{}}]);else npcSay(id,'Os Blocos Mágicos pertencem a todos! O museu transformou-se num Castelo LEGO dos Sonhos, aberto a quem quiser brincar.')}
+ else if(id==='magic-ark'){if(state.flags.blocksReturned)npcSay('archaeologist','A arca está vazia, mas a feira inteira está a construir o Castelo LEGO dos Sonhos!');else say('Alfredo',state.flags.museumPass?'A arca dos Blocos Mágicos está no centro da sala. O Arqueólogo guarda-a.':'A arca está protegida dentro do museu.','🧰')}
+ else say(near.name,'Olá, explorador! Continua a aventura.',near.emoji);
+ updateHud();
 }
-function loop(t){let dt=Math.min(.04,(t-last)/1000||0);last=t;let dx=0,dy=0;if(keys.ArrowLeft||keys.a)dx=-1;if(keys.ArrowRight||keys.d)dx=1;if(keys.ArrowUp||keys.w)dy=-1;if(keys.ArrowDown||keys.s)dy=1;if(dx||dy){let n=Math.hypot(dx,dy);move(dx/n,dy/n)}draw();requestAnimationFrame(loop)}
-window.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();if(e.key===' '||e.key==='Enter'){interact();return}if(e.key==='Escape'){closeDialog();return}keys[e.key]=true});window.addEventListener('keyup',e=>keys[e.key]=false);document.querySelectorAll('[data-key]').forEach(b=>{let k=b.dataset.key;b.addEventListener('pointerdown',e=>{e.preventDefault();keys[k]=true});['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>keys[k]=false))});$('act').onclick=interact;$('reset').onclick=()=>{if(confirm('Apagar o progresso guardado e começar de novo?')){localStorage.removeItem('brincadeiros_v3');location.reload()}};updateHud();requestAnimationFrame(loop);
+function updateHud(){const z=state.zone;$('zone').textContent='📍 '+zones[z].name;$('inventory').textContent='🎒 Mochila: '+(state.items.length?state.items.length+' objetos':'vazia');$('progress').textContent='🗺️ '+state.unlocked.length+'/6 zonas';const objectives=['Encontra o bilhete e o mapa antes de zarpar.','Atravessa o caminho das medusas.','Ajuda a Medusa Musical a reconstruir a sua canção.','Ajuda o Tiozão a atrair os dois peixes-gato.','Ajuda o Tiozão e a Sardanisca a cuidar juntos dos peixes-gato.','Resolve o enigma dos guardas e recupera os Blocos Mágicos.'];$('objective').textContent='✦ Objetivo: '+objectives[z]}
+function blocked(x,y){const tile=maps[state.zone][Math.floor(y)]?.[Math.floor(x)];return tile===undefined||tile===1||tile===6||tile===8||tile===9||(tile===3&&state.zone!==1)}
+let brotherRoute=[],brotherRepath=0;
+function findBrotherPath(){
+ const start={x:Math.floor(state.brother.x+.5),y:Math.floor(state.brother.y+.5)};
+ const goal={x:Math.floor(state.x+.5),y:Math.floor(state.y+.5)};
+ if(start.x===goal.x&&start.y===goal.y)return [];
+ const queue=[start],seen=new Set([start.x+','+start.y]),parent=new Map();
+ const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
+ while(queue.length){
+  const p=queue.shift();
+  if(p.x===goal.x&&p.y===goal.y){
+   const path=[];
+   let key=p.x+','+p.y;
+   while(key!==start.x+','+start.y){const cur=parent.get(key);path.unshift({x:cur.x+.5,y:cur.y+.5});key=cur.x+','+cur.y}
+   return path;
+  }
+  for(const [dx,dy] of dirs){
+   const nx=p.x+dx,ny=p.y+dy,key=nx+','+ny;
+   if(!seen.has(key)&&maps[state.zone][ny]?.[nx]!==undefined&&!blocked(nx+.5,ny+.5)){seen.add(key);parent.set(key,p);queue.push({x:nx,y:ny})}
+  }
+ }
+ return [];
+}
+function updateBrother(dt){
+ brotherRepath-=dt;
+ if(brotherRepath<=0){brotherRoute=findBrotherPath();brotherRepath=.35}
+ if(!brotherRoute.length){state.brother.moving=false;return}
+ const target=brotherRoute[0],dx=target.x-state.brother.x,dy=target.y-state.brother.y,d=Math.hypot(dx,dy);
+ if(d<.12){brotherRoute.shift();return}
+ const speed=(state.running?2.25:1.55)*dt,step=Math.min(speed,d),vx=dx/d*step,vy=dy/d*step;
+ if(!blocked(state.brother.x+vx,state.brother.y)){state.brother.x+=vx}
+ if(!blocked(state.brother.x,state.brother.y+vy)){state.brother.y+=vy}
+ state.brother.face=Math.abs(vx)>Math.abs(vy)?(vx<0?1:2):(vy<0?3:0);
+ state.brother.step+=step*4;
+ state.brother.moving=true;
+ state.brother.running=state.running;
+}
+function move(dx,dy,dt){if(dialog)return;const running=!!(keys.ShiftLeft||keys.ShiftRight),speed=(running?4.4:2.8)*dt;let nx=state.x+dx*speed,ny=state.y+dy*speed;if(!blocked(nx,ny)){state.x=nx;state.y=ny;state.face=dx<0?1:dx>0?2:dy<0?3:0;state.step+=speed*8;state.moving=true;state.running=running}else{state.moving=false}}
+function penguin(x,y,scale=1,small=false,character=state){g.save();g.translate(x,y);g.scale(scale,scale);let moving=character.moving||false,running=character.running||false,action=character.action||'idle',time=character.actionTime||0,step=character.step||0,face=character.face||0;
+ if(face===3)g.scale(1,.94);if(face===0)g.scale(1,1.04);
+ g.scale(face===1?-1:1,1);
+ let bob=moving?Math.sin(step*3)*(running?2.5:1.7):Math.sin(step*.9)*.55;
+ let swing=moving?Math.sin(step*4)*(running?7:4):0;
+ if(action==='celebrate')bob+=-Math.abs(Math.sin(time*7))*6;
+ g.translate(0,bob);
+ g.fillStyle='#173b48';g.beginPath();g.ellipse(0,5,14,17,0,0,Math.PI*2);g.fill();
+ g.fillStyle='#f5f1dc';g.beginPath();g.ellipse(0,8,9,12,0,0,Math.PI*2);g.fill();
+ g.save();g.translate(swing*.35,0);
+ g.fillStyle='#173b48';g.beginPath();g.ellipse(-11,2,4,11,.25,0,7);g.ellipse(11,2,4,11,-.25,0,7);g.fill();g.restore();
+ g.fillStyle='#fff';g.beginPath();g.arc(-4,-7,3,0,7);g.arc(4,-7,3,0,7);g.fill();
+ const blink=((performance.now()/1000+(character===state?0:.37))%4.2>3.9);g.fillStyle='#142e35';
+ if(blink){g.fillRect(-6,-8,4,1);g.fillRect(2,-8,4,1)}else{g.beginPath();g.arc(-3,-7,1.4,0,7);g.arc(5,-7,1.4,0,7);g.fill()}
+ g.fillStyle='#f2a84c';g.beginPath();g.moveTo(-3,-1);g.lineTo(4,-1);g.lineTo(0,3);g.closePath();g.fill();
+ g.fillStyle='#eaa34d';
+ g.save();g.translate(swing*.18,0);g.beginPath();g.ellipse(-7,16,5,2.5,-.2,0,7);g.ellipse(7,16,5,2.5,.2,0,7);g.fill();g.restore();
+ if(!small){g.fillStyle='#347fb1';g.fillRect(-10,-17,20,5);g.fillStyle='#e8c56e';g.fillRect(-3,-22,6,6);g.fillStyle='#fff0c8';g.fillRect(-2,-16,4,2)}else{g.fillStyle='#e6bd65';g.fillRect(-5,-18,10,3)}
+ if(action==='interact'){g.fillStyle='#fff0c7';g.font='16px sans-serif';g.textAlign='center';g.fillText('?',0,-28)}
+ if(action==='celebrate'){g.fillStyle='#ffe58c';g.font='16px sans-serif';g.textAlign='center';g.fillText('✦',-13,-23);g.fillText('✦',13,-23)}
+ g.restore()}
+function tree(x,y,variant=0){g.fillStyle='#604a37';g.fillRect(x-4,y-3,8,15);g.fillStyle=variant?'#27684f':'#367c4d';g.beginPath();g.arc(x,y-9,14,0,7);g.arc(x-9,y-4,9,0,7);g.arc(x+9,y-4,9,0,7);g.fill();g.fillStyle='#77ad61';g.beginPath();g.arc(x-4,y-15,5,0,7);g.fill()}
+function palm(x,y){g.fillStyle='#70503a';g.beginPath();g.moveTo(x-3,y+12);g.lineTo(x-7,y-24);g.lineTo(x-2,y-25);g.lineTo(x+4,y+12);g.closePath();g.fill();g.fillStyle='#4d7f3d';for(let i=0;i<7;i++){let angle=-Math.PI*.9+i*Math.PI*.26,gx=x+Math.cos(angle)*19,gy=y-25+Math.sin(angle)*10;g.beginPath();g.ellipse(gx,gy,12,4,angle,0,Math.PI*2);g.fill()}g.fillStyle='#79aa58';g.beginPath();g.arc(x-2,y-25,7,0,Math.PI*2);g.fill()}
+function woodenDock(px,py,x,y){g.fillStyle='#735239';g.fillRect(px,py,S,S);g.fillStyle='#ad8450';for(let row=0;row<4;row++){g.fillRect(px+2,py+2+row*9,36,7);g.fillStyle='#80603f';g.fillRect(px+2,py+9+row*9,36,2);g.fillStyle='#ad8450'}g.fillStyle='#d2a461';g.fillRect(px+4,py+4,2,2);g.fillRect(px+34,py+4,2,2);if(maps[0][y-1]?.[x]!==5)g.fillRect(px+3,py,3,4);if(maps[0][y+1]?.[x]!==5)g.fillRect(px+34,py+36,3,4)}
+function draw(){
+ const z=zones[state.zone],maxX=MW*S-W,maxY=MH*S-H;
+ cam.x=Math.max(0,Math.min(maxX,state.x*S-W/2));cam.y=Math.max(0,Math.min(maxY,state.y*S-H/2));
+ g.fillStyle=z.sky;g.fillRect(0,0,W,H);const map=maps[state.zone],time=performance.now();
+ for(let y=Math.floor(cam.y/S);y<Math.min(MH,Math.ceil((cam.y+H)/S)+1);y++)for(let x=Math.floor(cam.x/S);x<Math.min(MW,Math.ceil((cam.x+W)/S)+1);x++){
+  const tile=map[y][x],px=x*S-cam.x,py=y*S-cam.y;
+  if(tile===6){
+   g.fillStyle=state.zone===2?'#354767':state.zone===1?'#23869b':'#278aa1';g.fillRect(px,py,S,S);
+   g.strokeStyle=state.zone===2?'#b9d1ec55':'#a5e3dc55';g.lineWidth=1.5;
+   const wave=(time*.018+x*7+y*13)%40;g.beginPath();g.moveTo(px+wave-12,py+12);g.quadraticCurveTo(px+wave-6,py+8,px+wave,py+12);g.quadraticCurveTo(px+wave+6,py+16,px+wave+12,py+12);g.stroke();
+  }else{
+   g.fillStyle=tile===1||tile===7?z.sand:tile===2?z.path:z.grass;g.fillRect(px,py,S,S);
+  }
+  if(tile===0&&((x*13+y*7)%5===0)){g.fillStyle='#ffffff12';g.fillRect(px+((x*13+y*7)%31),py+((x*5+y*11)%29),3,3)}
+  if(tile===3){
+   if(state.zone===0||state.zone===3)palm(px+20,py+27);
+   else if(state.zone===1){
+    const bob=Math.sin(time*.004+x)*2;g.fillStyle='#d9a8ec';g.beginPath();g.ellipse(px+20,py+18+bob,10,9,0,0,7);g.fill();g.fillStyle='#ffe9a8';g.fillRect(px+16,py+16+bob,2,2);g.fillRect(px+22,py+16+bob,2,2);g.strokeStyle='#e5c4ed';g.beginPath();g.moveTo(px+14,py+24+bob);g.lineTo(px+12,py+32);g.moveTo(px+20,py+26+bob);g.lineTo(px+20,py+34);g.moveTo(px+26,py+24+bob);g.lineTo(px+28,py+32);g.stroke();
+   }else if(state.zone===2){g.fillStyle='#293858';g.beginPath();g.ellipse(px+21,py+20,18,12,0,0,7);g.fill();g.fillStyle='#536b99';g.beginPath();g.arc(px+14,py+16,8,0,7);g.arc(px+25,py+13,9,0,7);g.fill()}
+   else if(state.zone===4){g.fillStyle='#625e58';g.beginPath();g.moveTo(px+4,py+34);g.lineTo(px+8,py+14);g.lineTo(px+14,py+8);g.lineTo(px+23,py+15);g.lineTo(px+35,py+10);g.lineTo(px+38,py+36);g.closePath();g.fill()}
+   else{const colors=['#e34f4f','#4e86d4','#f1cb45','#5da775'];g.fillStyle=colors[(x+y)%colors.length];g.fillRect(px+6,py+8,28,28);g.fillStyle='#ffffff55';g.fillRect(px+9,py+11,8,6);g.fillStyle='#263a56';for(let bx=px+10;bx<px+31;bx+=10)g.fillRect(bx,py+18,5,5)}
+  }
+  if(tile===4){
+   if(state.zone===1){g.fillStyle='#f6d4fb';g.beginPath();g.ellipse(px+20,py+20,7,5,0,0,7);g.fill();g.fillStyle='#e4c4ef';g.fillRect(px+18,py+24,2,5);g.fillRect(px+22,py+24,2,5)}
+   else if(state.zone===2){g.strokeStyle='#fff2a1';g.lineWidth=3;g.beginPath();g.moveTo(px+20,py+3);g.lineTo(px+14,py+19);g.lineTo(px+23,py+17);g.lineTo(px+17,py+36);g.stroke()}
+   else if(state.zone===4){g.fillStyle='#8bd4d2';g.beginPath();g.moveTo(px+20,py+5);g.lineTo(px+31,py+20);g.lineTo(px+20,py+35);g.lineTo(px+9,py+20);g.closePath();g.fill()}
+   else{g.fillStyle='#f4dd8a';g.fillRect(px+15,py+14,10,10);g.fillStyle='#ffffff66';g.fillRect(px+17,py+16,3,3)}
+  }
+  if(tile===5&&state.zone===0)woodenDock(px,py,x,y);
+  if(tile===8){g.fillStyle='#d9c49a';g.fillRect(px+10,py-40,20,40);g.fillStyle='#9f5747';g.fillRect(px+7,py-44,26,8);g.fillStyle='#f8e6a3';g.fillRect(px+16,py-32,8,7);g.fillStyle='#493f48';g.fillRect(px+18,py-11,5,11)}
+  if(tile===9){g.fillStyle='#70503a';g.beginPath();g.moveTo(px-9,py+22);g.lineTo(px+43,py+22);g.lineTo(px+35,py+34);g.lineTo(px,py+34);g.closePath();g.fill();g.fillStyle='#a67b4f';g.fillRect(px+1,py+10,32,12);g.fillStyle='#4b3b32';g.fillRect(px+5,py+4,18,6);g.fillStyle='#9c754b';g.fillRect(px+3,py+17,28,3)}
+ }
+ for(const a of actors[state.zone]){
+  if((a.kind==='item'&&state.items.includes(a.id))||(a.visibleWhen&&!state.flags[a.visibleWhen])||(a.id==='archaeologist'&&!state.flags.museumPass)||(a.id==='magic-ark'&&!state.flags.museumPass))continue;
+  const x=a.x*S-cam.x,y=a.y*S-cam.y;if(x<-35||x>W+35||y<-42||y>H+35)continue;
+  g.fillStyle='#0005';g.beginPath();g.ellipse(x,y+12,14,5,0,0,7);g.fill();
+  if(a.kind==='npc'&&a.sprite){const image=npcSprite(a.sprite);if(image.complete&&image.naturalWidth)g.drawImage(image,x-19,y-38,38,42);else{g.font='25px serif';g.textAlign='center';g.fillText(a.emoji,x,y+4)}}
+  else{g.font='25px serif';g.textAlign='center';g.fillText(a.emoji,x,y+5)}
+  g.fillStyle='#fff4d6';g.font='11px Trebuchet MS';g.textAlign='center';g.fillText(a.name,x,y-25);
+ }
+ penguin(state.brother.x*S-cam.x,state.brother.y*S-cam.y,.72,true,state.brother);penguin(state.x*S-cam.x,state.y*S-cam.y,1,false,state);
+ const mx=W-145,my=14;g.fillStyle='#102d35cc';g.fillRect(mx,my,130,94);g.fillStyle='#fff0c4';g.font='10px Trebuchet MS';g.textAlign='left';g.fillText('MAPA',mx+8,my+13);
+ for(let i=0;i<6;i++){g.fillStyle=state.unlocked.includes(i)?['#73c9b5','#d9a8ec','#7183b3','#e5a56e','#89978d','#efcc55'][i]:'#465b5b';const x=mx+8+(i%3)*37,y=my+20+Math.floor(i/3)*22;g.fillRect(x,y,28,17);g.fillStyle='#102d35';g.fillText(''+(i+1),x+12,y+12)}
+ g.fillStyle='#fff0c4';g.fillText('Zonas '+state.unlocked.length+'/6',mx+8,my+72);g.fillText('Alfredo + irmão',mx+8,my+86);
+}
+function loop(t){let dt=Math.min(.04,(t-last)/1000||0);last=t;if(gameStarted){let dx=0,dy=0;if(keys.ArrowLeft||keys.a)dx=-1;if(keys.ArrowRight||keys.d)dx=1;if(keys.ArrowUp||keys.w)dy=-1;if(keys.ArrowDown||keys.s)dy=1;if(dx||dy){let n=Math.hypot(dx,dy);move(dx/n,dy/n,dt)}else{state.moving=false;state.running=false}updateBrother(dt);state.actionTime+=dt;if(state.action==='interact'&&state.actionTime>.65)state.action='idle';if(state.action==='celebrate'&&state.actionTime>2.4){state.action='idle';state.celebrating=false}if(!state.moving)state.running=false}else{state.moving=false;state.running=false}draw();requestAnimationFrame(loop)}
+const startScreen=$('start-screen'),startContinue=$('start-continue'),startNew=$('start-new');
+startContinue.textContent=hasSavedProgress?'Continuar aventura':'Começar a aventura';
+startNew.hidden=!hasSavedProgress;
+function openGame(newGame=false){if(newGame){Object.assign(state,initialState());brotherRoute=[];brotherRepath=0;music.pause();activeTrack=-1;setMusicForZone();save();updateHud()}gameStarted=true;startScreen.hidden=true}
+startContinue.onclick=()=>openGame();startNew.onclick=()=>{if(confirm('Começar uma nova aventura? O progresso atual será apagado.'))openGame(true)};
+window.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();if(!gameStarted)return;if(e.key===' '||e.key==='Enter'){interact();return}if(e.key==='Escape'){closeDialog();return}keys[e.key]=true});window.addEventListener('keyup',e=>keys[e.key]=false);document.querySelectorAll('[data-key]').forEach(b=>{let k=b.dataset.key;b.addEventListener('pointerdown',e=>{e.preventDefault();keys[k]=true});['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>keys[k]=false))});$('act').onclick=interact;$('music-toggle').onclick=toggleMusic;$('reset').onclick=()=>{if(confirm('Apagar o progresso guardado e começar de novo?')){localStorage.removeItem('brincadeiros_v4');location.reload()}};setMusicForZone();updateHud();requestAnimationFrame(loop);
 })();</script></body></html>

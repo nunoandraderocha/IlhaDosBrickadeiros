@@ -4,19 +4,17 @@ RPG 2D de aventura, exploração e enigmas inspirado nas histórias de Natal do 
 
 ## Estado atual
 
-O `index.html` contém o protótipo jogável v3. A estrutura de pastas prepara a separação gradual do código, dados e recursos visuais nas próximas versões.
+O `index.html` contém o protótipo jogável v4, com ecrã inicial narrativo, seis zonas ligadas aos capítulos, NPCs com sprites e avatares de diálogo, e progresso guardado localmente.
 
 ## Executar localmente
 
-A forma mais simples é abrir `index.html` num navegador moderno (Chrome, Edge ou Firefox). Como o jogo atual é autónomo, não necessita de servidor nem de dependências.
-
-Opcionalmente, iniciar um servidor local na raiz do projeto:
+Para jogar com música, inicia um servidor local na raiz do projeto:
 
 ```bash
 python -m http.server 8000
 ```
 
-Depois abrir http://localhost:8000.
+Depois abre http://localhost:8000 num navegador moderno. Os navegadores bloqueiam o carregamento das faixas locais quando o jogo é aberto diretamente por `file://`; sem servidor, o jogo funciona sem música.
 
 ## Publicar com GitHub Pages
 
@@ -33,7 +31,7 @@ Cada `git push` para `main` atualizará a publicação.
 
 ```text
 .
-├── index.html              # Entrada publicada pelo GitHub Pages (protótipo v3)
+├── index.html              # Entrada publicada pelo GitHub Pages (protótipo v4)
 ├── src/                    # Código JavaScript a modularizar
 ├── assets/
 │   ├── sprites/            # Sprites e animações
